@@ -1,0 +1,15 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ro">
+    <head>
+        <title>{{titlu_tab}}</title>
+        <link rel="stylesheet" href="{% static 'aplicatie_masini/css/stil.css' %}" type="text/css">
+    </head>
+    <body>
+        <h1>{{titlu_articol}}</h1>
+        <p>{{continut_articol}}</p>
+        <a href="{% url 'info' %}">Informatii</a>
+        <img src="{% static 'aplicatie_masini/imagini/imag.webp' %}" alt="Logo">
+    </body>
+</html>
