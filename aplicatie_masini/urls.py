@@ -4,4 +4,5 @@ urlpatterns = [
 	path("", views.index, name="index"),
 	path("info", views.info, name="info"),
 	path("exemplu", views.afis_template, name='exemplu'),
+	path("log", views.afis_log, name="log")
 ]

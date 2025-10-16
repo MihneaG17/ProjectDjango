@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from datetime import date, datetime
 import locale
+from . import middleware
 locale.setlocale(locale.LC_TIME, 'romanian')
 
 # Create your views here.
@@ -9,8 +10,15 @@ def index(request):
 	return HttpResponse("Magazin de masini")
 
 def info(request):
+    keys = list(request.GET.keys())
+    count = len(keys)
+    if count > 0:
+        nume_param = ", ".join(keys)
+    else:
+        nume_param = "niciun parametru"
+    param_section = f"<h2>Parametri</h2><p>Numar parametri: {count}</p><p>Nume parametri: {nume_param}</p>"
+    
     data_param = request.GET.get("data")
-    #return exemplu_view(request)
     return HttpResponse(f"""
                      <html>
                         <head>
@@ -19,6 +27,7 @@ def info(request):
                      <body>
                         <h1>Informatii despre server </h1>
                         <p>{afis_data(data_param)}</p>
+                        {param_section}
                      </body>
                      </html>
                      """)
@@ -77,7 +86,8 @@ class Accesare:
             string = string + '/'
         return string or '/'
         
-    
+
+
 def exemplu_view(request):
     acces1 = Accesare(request.META.get('REMOTE_ADDR', '0.0.0.0'),
                         request.get_full_path(),
@@ -108,3 +118,91 @@ def afis_template(request):
             "continut_articol":"Continut text"
         }
     )
+
+def afis_log(request):
+    
+    html = []
+    
+    ultimele_param = request.GET.get("ultimele")
+    accesari_param = request.GET.get("accesari")
+    dubluri_param = request.GET.get("dubluri")
+    dubluri = dubluri_param in ("true", "TRUE")
+    tabel_param = request.GET.get("tabel")
+    
+    logs = middleware.LOGS
+    total=len(logs)
+    
+    #accesari
+    if accesari_param=="nr":
+        html.append(f"<h3>Numar total de accesari: {total}</h3>")
+    
+    if accesari_param=="detalii":
+        html.append("<h3>Detalii accesari (data si ora):</h3>")
+        html.append("<ul>")
+        for log in logs:
+            time = log.get("time")
+            timestr=time.strftime("%Y-%m-%d %H:%M:%S")
+            html.append(f"<li>{timestr}</li>")
+        html.append("</ul>")
+    
+    iduri_val = request.GET.getlist("iduri")
+    iduri_secventa = []
+    if iduri_val:
+        for chunk in iduri_val: #chunk reprezinta id-urile care sunt puse intr-o singura aparitie a parametrului, de exemplu: iduri=2,3&iduri=5,6 - chunk va fi ['2,3', '5,6']
+            for val in chunk.split(","):
+                val=val.strip()
+                try:
+                    id_int = int(val)
+                except ValueError:
+                    continue
+                if not dubluri and id_int in iduri_secventa:
+                    continue
+                iduri_secventa.append(id_int)
+    if iduri_secventa:
+        for id_cautat in iduri_secventa:
+            found=False
+            for idx, log in enumerate(logs):
+                lid = log.get("id")
+                try:
+                    lid_int=int(lid)
+                except ValueError:
+                    lid_int = idx+1
+                
+                if lid_int == id_cautat:
+                    html.append(
+                        f'<p>Path: {log.get("path")} - Method: {log.get("method")} - IP: {log.get("ip", "")} - Time: {log.get("time")}</p>'
+                    )
+                    found = True
+                    break
+            if not found:
+                html.append(f'<p>(Nu exista accesare cu id={id_cautat})</p>')
+        return HttpResponse("".join(html))
+    
+    #ultimele
+    if ultimele_param is None:
+        for log in middleware.LOGS:
+            html.append(f'<p> Path: {log.get("path")} - Method: {log.get("method")} - IP: {log.get("ip")} - Time: {log.get("time")} </p>')
+        return HttpResponse("".join(html))
+    try:
+        n=int(ultimele_param)
+    except ValueError:
+        return HttpResponse("Eroare: parametrul 'ultimele' nu a primit o valoare numerica")
+    
+    if n<=0:
+        return HttpResponse("Eroare: parametrul 'ultimele' trebuie sa aiba o valoare pozitiva")
+    
+    total = len(middleware.LOGS)
+    if n>total:
+        for log in middleware.LOGS:
+            html.append(f'<p> Path: {log.get("path")} - Method: {log.get("method")} - IP: {log.get("ip")} - Time: {log.get("time")} </p>')
+        html.append(f'<p>Exista doar {total} accesari fata de {n} cerute</p>')
+        return HttpResponse("".join(html))
+    
+    ultimele_accesari = middleware.LOGS[-n:]
+    for log in ultimele_accesari:
+        html.append(f'<p> Path: {log.get("path")} - Method: {log.get("method")} - IP: {log.get("ip")} - Time: {log.get("time")} </p>')
+    
+    return HttpResponse("".join(html))
+                
+
+
