@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'aplicatie_masini',
+    'aplicatie_masini.apps.AplicatiemasiniConfig',
 ]
 
 MIDDLEWARE = [
@@ -76,8 +76,15 @@ WSGI_APPLICATION = 'magazinmasini.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'OPTIONS': {
+                'options': '-c search_path=django'  
+        },
+        'NAME': 'dj2025',
+        'USER': 'mihnea',
+        'PASSWORD': 'mihnea',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
