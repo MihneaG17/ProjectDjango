@@ -176,33 +176,96 @@ def afis_log(request):
                     break
             if not found:
                 html.append(f'<p>(Nu exista accesare cu id={id_cautat})</p>')
-        return HttpResponse("".join(html))
+        #return HttpResponse("".join(html))
     
     #ultimele
+    logs_to_display=logs
     if ultimele_param is None:
-        for log in middleware.LOGS:
+        for log in logs_to_display:
             html.append(f'<p> Path: {log.get("path")} - Method: {log.get("method")} - IP: {log.get("ip")} - Time: {log.get("time")} </p>')
-        return HttpResponse("".join(html))
-    try:
-        n=int(ultimele_param)
-    except ValueError:
-        return HttpResponse("Eroare: parametrul 'ultimele' nu a primit o valoare numerica")
+    else:
+        try:
+            n=int(ultimele_param)
+        except (ValueError, TypeError):
+            return HttpResponse("Eroare: parametrul 'ultimele' nu a primit o valoare numerica")
+        
+        if n<=0:
+            return HttpResponse("Eroare: parametrul 'ultimele' trebuie sa aiba o valoare pozitiva")
+        
+        total = len(logs)
+        if n>total:
+            for log in logs_to_display:
+                html.append(f'<p> Path: {log.get("path")} - Method: {log.get("method")} - IP: {log.get("ip")} - Time: {log.get("time")} </p>')
+            html.append(f'<p>Exista doar {total} accesari fata de {n} cerute</p>')
+        else:
+            logs_to_display = logs[-n:] #ultimele log-uri
+            for log in logs_to_display:
+                html.append(f'<p> Path: {log.get("path")} - Method: {log.get("method")} - IP: {log.get("ip")} - Time: {log.get("time")} </p>')
     
-    if n<=0:
-        return HttpResponse("Eroare: parametrul 'ultimele' trebuie sa aiba o valoare pozitiva")
+    logs = logs_to_display
     
-    total = len(middleware.LOGS)
-    if n>total:
-        for log in middleware.LOGS:
-            html.append(f'<p> Path: {log.get("path")} - Method: {log.get("method")} - IP: {log.get("ip")} - Time: {log.get("time")} </p>')
-        html.append(f'<p>Exista doar {total} accesari fata de {n} cerute</p>')
-        return HttpResponse("".join(html))
+    #tabel
+    if tabel_param == "tot":
+        html.append("<table border='1' cellpadding='4' cellspacing='0'>")
+        html.append("<tr><th>ID</th><th>Path</th><th>Method</th><th>IP</th><th>Time</th></tr>")
+        for log in logs:
+            time = log.get("time")
+            timestr=time.strftime("%Y-%m-%d %H:%M:%S")
+            html.append(f"<tr><td>{log.get('id')}</td><td>{log.get('path')}</td><td>{log.get('method')}</td><td>{log.get('ip')}</td><td>{timestr}</td></tr>")
     
-    ultimele_accesari = middleware.LOGS[-n:]
-    for log in ultimele_accesari:
-        html.append(f'<p> Path: {log.get("path")} - Method: {log.get("method")} - IP: {log.get("ip")} - Time: {log.get("time")} </p>')
-    
-    return HttpResponse("".join(html))
-                
+    elif tabel_param is not None and tabel_param != "":
+        tabel_categ=[]
+        categorii=tabel_param.split(",")
+        categorii_acceptate=['id', 'path', 'method', 'ip', 'time']
+        for item in categorii:
+            if item in categorii_acceptate:
+                tabel_categ.append(item)
+        
+        if not tabel_categ:
+            html.append("<p>Parametrul tabel nu contine coloane valide</p>")
+        else:
+            html.append("<table border='1' cellpadding='4' cellspacing='0'>")
+            html.append("<tr>")
+            for categ in tabel_categ:
+                html.append(f"<th>{categ.capitalize()}</th>")
+            html.append("</tr>")
+            for log in logs:
+                html.append("<tr>")
+                for categ in tabel_categ:
+                    html.append(f"<td>{log.get(categ)}</td>")
+                html.append("</tr>")
+            html.append("</table>")
+
+    #lista pagini cel mai mult/cel mai putin accesate
+    if logs:
+        frecv= {}
+        for log in logs:
+            path = log.get("path", "/")
+            path = path.split("?")[0]
+            if path in frecv:
+                frecv[path]+=1
+            else:
+                frecv[path]=1
+        max_cnt=0
+        min_cnt=None
+        pagini_max=[]
+        pagini_min=[]
+        
+        for path, count in frecv.items():
+            if count>max_cnt:
+                max_cnt=count
+            if min_cnt is None or count<min_cnt:
+                min_cnt=count
+        
+        for path, count in frecv.items():
+            if count==max_cnt:
+                pagini_max.append(path)
+            if count==min_cnt:
+                pagini_min.append(path)
+        
+        html.append("<h3>Statistici accesari: </h3>")
+        html.append("<p>Pagina/paginile cu cele mai multe accesari: " + ", ".join(pagini_max)+f"({max_cnt} accesari)</p>")
+        html.append("<p>Pagina/paginile cu cele mai putine accesari: " + ", ".join(pagini_min)+f"({min_cnt} accesari)</p>")
+    return HttpResponse("".join(html))           
 
 
