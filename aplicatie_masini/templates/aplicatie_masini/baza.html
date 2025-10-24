@@ -1,0 +1,46 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %} Magazin de masini {% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'aplicatie_masini/css/style.css' %}">
+</head>
+<body>
+   <header>
+        <div class="topbar">
+            <h1 class="logo"> <a href="{% url 'index' %}">Magazin Masini</a></h1>
+            <nav class="menu">
+                <ul class="menu-list">
+                    <li> <a href="{% url 'index' %}">Acasa</a>
+                        <ul class="submenu">
+                            <li> <a href="{% url 'index' %}#prezentare">Prezentare</a></li>
+                            <li> <a href="{% url 'index' %}#oferte">Oferte</a></li>
+                            <li> <a href="{% url 'index' %}#testimoniale">Testimoniale clienti</a></li>
+                        </ul>
+                    </li>
+                    <li> <a href="{% url 'produse' %}">Produse</a></li>
+                    <li> <a href="{% url 'despre' %}">Despre</a>
+                        <ul class="submenu">
+                            <li><a href="{% url 'despre' %}#misiune">Misiune</a></li>
+                            <li><a href="{% url 'despre' %}#echipa">Echipa</a></li>
+                        </ul>
+                    </li>
+                    <li> <a href="{% url 'contact'%}">Contact</a></li>
+                    <li> <a href="{% url 'cos_virtual'%}">Cos</a></li>
+                </ul>
+            </nav>
+        </div>
+   </header>
+   <main>
+    {% block main %} {% endblock %}
+   </main>
+   <footer>
+        <div class="footer-inner">
+            <p>Magazin Masini - Dobrin Mihnea-Gabriel</p>
+            <p>IP Client: {{ ip_client }}</p>
+        </div>
+   </footer>
+</body>
+</html>

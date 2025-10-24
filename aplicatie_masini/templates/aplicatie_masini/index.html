@@ -1,0 +1,22 @@
+{% extends 'aplicatie_masini/baza.html' %}
+{% load static %}
+
+{% block title %} Acasa {% endblock %}
+
+{% block main %}
+    <section id="prezentare" class="hero">
+        <img src = "{% static 'aplicatie_masini/imagini/banner.jpg' %}" alt="banner" class="hero-img">
+        <h2> {{ banner_text }} </h2>
+        <p>Platforma noastra iti ofera o selectie atenta de masini verificate.</p>
+    </section>
+
+    <section id="oferte" class="oferte">
+        <h2>Masini noi si oferte</h2>
+        <p>Vor fi afisate primele 3-5 masini</p>
+    </section>
+
+    <section id="testimoniale" class="testimoniale">
+        <h2>Testimoniale</h2>
+        <p>Experientele clientilor nostri</p>
+    </section>
+{% endblock %}

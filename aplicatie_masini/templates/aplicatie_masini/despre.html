@@ -1,0 +1,17 @@
+{% extends 'aplicatie_masini/baza.html' %}
+{% load static %}
+
+{% block title %} Despre {% endblock %}
+
+{% block main %}
+    <section id="misiune">
+        <h2> Misiune si valori </h2>
+        <p>Ne propunem sa conectam clientii cu masinile potrivite, oferind transparenta si servicii de calitate.</p>
+        <img src = "{% static 'aplicatie_masini/imagini/despre.jpg' %}" alt="Despre">
+    </section>
+
+    <section id="echipa">
+        <h2>Echipa</h2>
+        <p>Echipa noastra este formata din specialisti în vanzări auto, mecanica si servicii clienti.</p>
+    </section>
+{% endblock %}

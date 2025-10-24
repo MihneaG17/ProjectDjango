@@ -6,8 +6,6 @@ locale.setlocale(locale.LC_TIME, 'romanian')
 
 # Create your views here.
 from django.http import HttpResponse
-def index(request):
-	return HttpResponse("Magazin de masini")
 
 def info(request):
     keys = list(request.GET.keys())
@@ -119,6 +117,7 @@ def afis_template(request):
         }
     )
 
+#functie pentru log-uri
 def afis_log(request):
     
     html = []
@@ -269,3 +268,40 @@ def afis_log(request):
     return HttpResponse("".join(html))           
 
 
+#view-uri pentru template rendering
+def index(request):
+    return render(request,"aplicatie_masini/index.html",
+        {
+            "titlu_tab":"Magazin de masini",
+            "banner_text":"Cele mai bune masini la un click distanta",
+            "ip_client":request.META.get('REMOTE_ADDR',''),
+        }
+    )
+
+def despre(request):
+    return render(request, "aplicatie_masini/despre.html",
+                  {
+                      "ip_client":request.META.get('REMOTE_ADDR',''),
+                  }
+        )
+
+def in_lucru(request):
+    return render(request, "aplicatie_masini/in_lucru.html",
+                  {
+                      "ip_client":request.META.get('REMOTE_ADDR',''),
+                  }
+        )
+
+def log_view(request):
+    return render(request, "aplicatie_masini/in_lucru.html",
+                  {
+                      "ip_client":request.META.get('REMOTE_ADDR',''),
+                  }
+        )
+
+def log_view(request):
+    return render(request, "aplicatie_masini/in_lucru.html",
+                  {
+                      "ip_client":request.META.get('REMOTE_ADDR',''),
+                  }
+        )
