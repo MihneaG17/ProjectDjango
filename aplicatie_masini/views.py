@@ -17,18 +17,26 @@ def info(request):
     param_section = f"<h2>Parametri</h2><p>Numar parametri: {count}</p><p>Nume parametri: {nume_param}</p>"
     
     data_param = request.GET.get("data")
-    return HttpResponse(f"""
-                     <html>
-                        <head>
-                        <title>Magazin masini</title>
-                     </head>
-                     <body>
-                        <h1>Informatii despre server </h1>
+    data_info = afis_data(data_param)
+    
+    continut_info = f"""
+                    <h1>Informatii despre server </h1>
                         <p>{afis_data(data_param)}</p>
                         {param_section}
-                     </body>
-                     </html>
-                     """)
+                    """
+    return render(request, 'aplicatie_masini/info.html', {'continut_info': continut_info} )
+    #return HttpResponse(f"""
+    #                 <html>
+    #                    <head>
+    #                    <title>Magazin masini</title>
+    #                 </head>
+    #                 <body>
+    #                    <h1>Informatii despre server </h1>
+    #                    <p>{afis_data(data_param)}</p>
+    #                    {param_section}
+    #                 </body>
+    #                 </html>
+    #                 """)
 
 def afis_data(data):
     if(not data):
@@ -265,7 +273,9 @@ def afis_log(request):
         html.append("<h3>Statistici accesari: </h3>")
         html.append("<p>Pagina/paginile cu cele mai multe accesari: " + ", ".join(pagini_max)+f"({max_cnt} accesari)</p>")
         html.append("<p>Pagina/paginile cu cele mai putine accesari: " + ", ".join(pagini_min)+f"({min_cnt} accesari)</p>")
-    return HttpResponse("".join(html))           
+    continut_log = "".join(html)
+    return render(request, 'aplicatie_masini/log.html', {'continut_log': continut_log})    
+    # return HttpResponse("".join(html))      
 
 
 #view-uri pentru template rendering
