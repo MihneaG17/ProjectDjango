@@ -2,6 +2,7 @@ from django.shortcuts import render
 from datetime import date, datetime
 import locale
 from . import middleware
+from .models import Locatie
 locale.setlocale(locale.LC_TIME, 'romanian')
 
 # Create your views here.
@@ -168,22 +169,14 @@ def afis_log(request):
     if iduri_secventa:
         for id_cautat in iduri_secventa:
             found=False
-            for idx, log in enumerate(logs):
-                lid = log.get("id")
-                try:
-                    lid_int=int(lid)
-                except ValueError:
-                    lid_int = idx+1
-                
+            for log in logs:
+                lid_int = log.get("id")
                 if lid_int == id_cautat:
-                    html.append(
-                        f'<p>Path: {log.get("path")} - Method: {log.get("method")} - IP: {log.get("ip", "")} - Time: {log.get("time")}</p>'
-                    )
-                    found = True
+                    html.append(f'<p>Path: {log.get("path")} - Method: {log.get("method")} - IP: {log.get("ip", "")} - Time: {log.get("time")}</p>')
+                    found=True
                     break
             if not found:
                 html.append(f'<p>(Nu exista accesare cu id={id_cautat})</p>')
-        #return HttpResponse("".join(html))
     
     #ultimele
     logs_to_display=logs
@@ -313,5 +306,14 @@ def log_view(request):
     return render(request, "aplicatie_masini/in_lucru.html",
                   {
                       "ip_client":request.META.get('REMOTE_ADDR',''),
+                  }
+        )
+
+def afis_produse(request):
+    locatii = Locatie.object.all()
+    return render(request, "aplicatie_masini/locatii.html",
+                  {
+                      "locatii": locatii[0],
+                      "nr_locatii": len(locatii),
                   }
         )

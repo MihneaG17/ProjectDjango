@@ -7,6 +7,7 @@ class Locatie(models.Model):
     oras = models.CharField(max_length=100)
     judet = models.CharField(max_length=100)
     cod_postal = models.CharField(max_length=10)
+    nr=models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.adresa}, {self.oras}"
