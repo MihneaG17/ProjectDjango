@@ -320,7 +320,7 @@ def afis_produse(request):
                   }
         )
 
-def produse(request): 
+def produse(request, nume_categorie=None): 
     param_sortare=request.GET.get("sort")
     nrPagina=request.GET.get("pagina")
     if not nrPagina:
@@ -330,16 +330,27 @@ def produse(request):
     except (ValueError, TypeError):
         return HttpResponse("Eroare: parametrul 'pagina' nu a primit o valoare numerica")
     
-    masini = Masina.objects.all()
-    if param_sortare=='a':
-        masini=masini.order_by('pret_masina')
-    elif param_sortare=='d':
-        masini=masini.order_by('-pret_masina')
+    categorii_meniu=CategorieMasina.objects.all()
+    categorii_meniu=categorii_meniu.order_by('nume_categorie')
+    categorie_curenta=None
+    mesajEroare=None
+    if nume_categorie:
+        try:
+            categorie_curenta=CategorieMasina.objects.get(nume_categorie=nume_categorie)
+            masini=Masina.objects.filter(categorie=categorie_curenta)
+        except CategorieMasina.DoesNotExist:
+            mesajEroare="Categoria introdusa nu exista."
     else:
-        masini=masini.order_by('-data_adaugarii') #implicit dupa data adaugarii
+        masini = Masina.objects.all()
+    if not mesajEroare:
+        if param_sortare=='a':
+            masini=masini.order_by('pret_masina')
+        elif param_sortare=='d':
+            masini=masini.order_by('-pret_masina')
+        else:
+            masini=masini.order_by('-data_adaugarii') #implicit dupa data adaugarii
         
     paginator = Paginator(masini, 10)
-    mesajEroare = None
     try:
         obPagina = paginator.page(nrPagina)
     except EmptyPage:
@@ -350,18 +361,23 @@ def produse(request):
                         'pagina': obPagina,
                         'eroare': mesajEroare,
                         'param_sortare': param_sortare,
+                        'toate_categoriile': categorii_meniu,
+                        'categorie_curenta': categorie_curenta,
                         'ip_client':request.META.get('REMOTE_ADDR',''),
                     }
                   )
 
 def detalii_masina(request, id):
     mesajEroare=None
+    categorii_meniu=CategorieMasina.objects.all()
+    categorii_meniu=categorii_meniu.order_by('nume_categorie')
     try:
         masina = Masina.objects.get(pk=id)
         return render(request, 'aplicatie_masini/detalii_masina.html', 
             {
             'masina': masina,
-            'eroare': mesajEroare
+            'eroare': mesajEroare,
+            'toate_categoriile': categorii_meniu
             }
         )
     except Masina.DoesNotExist:
@@ -370,7 +386,8 @@ def detalii_masina(request, id):
         return render(request, 'aplicatie_masini/detalii_masina.html', 
             {
             'masina': masina,
-            'eroare': mesajEroare
+            'eroare': mesajEroare,
+            'toate_categoriile': categorii_meniu,
             }
         )
     

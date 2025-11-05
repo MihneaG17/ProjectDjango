@@ -6,6 +6,7 @@
     <meta charset="utf-8">
     <title>{% block title %} Magazin de masini {% endblock %}</title>
     <link rel="stylesheet" href="{% static 'aplicatie_masini/css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
    <header>
@@ -21,6 +22,14 @@
                         </ul>
                     </li>
                     <li> <a href="{% url 'produse' %}">Produse</a></li>
+                    <li> <a href="{% url 'produse'%}">Categorii</a>
+                        <ul class="submenu">
+                            {% for cat in toate_categoriile %}
+                            <li>
+                                <a href="{% url 'produse_pe_categorie' cat.nume_categorie %}"> {{cat.nume_categorie}} </a>
+                            </li>
+                            {% endfor %}
+                        </ul>
                     <li> <a href="{% url 'despre' %}">Despre</a>
                         <ul class="submenu">
                             <li><a href="{% url 'despre' %}#misiune">Misiune</a></li>

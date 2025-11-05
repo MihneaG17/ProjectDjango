@@ -23,6 +23,7 @@ class Marca(models.Model):
 class CategorieMasina(models.Model):
     nume_categorie = models.CharField(max_length=255)
     descriere = models.TextField()
+    icon_categorie=models.CharField(max_length=100, null=True, blank=True)
     
     def __str__(self):
         return self.nume_categorie

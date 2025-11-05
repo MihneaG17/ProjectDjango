@@ -142,6 +142,38 @@ footer {
     font-size: 2.5rem;
 }
 
+.produse-heading i {
+    font-size: 0.9em;
+    color: #555;
+    margin-right: 10px;
+}
+
+.link-categorie {
+    text-decoration: none;
+    color: #007bff;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.link-categorie:hover {
+    color: #0056b3; 
+    text-decoration: underline;
+}
+
+.link-categorie i {
+    margin-right: 5px;
+    color: #777; 
+    font-size: 0.9em;
+}
+
+.categ-descriere {
+    text-align: center;
+    max-width: 600px;
+    margin: -10px auto 30px;
+    color: #555;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
 .lista-produse {
     display: flex;
     flex-wrap: wrap;

@@ -1,9 +1,24 @@
 {% extends "aplicatie_masini/baza.html" %}
 
-{% block title %} Produse {% endblock %}
+{% block title %}
+    {% if categorie_curenta %}
+        {{ categorie_curenta.nume_categorie }}
+    {% else %}
+        Produse
+    {% endif %}
+{% endblock %}
 
 {% block main %}
-    <h1 class="produse-heading"> Produse </h1>
+    {% if categorie_curenta %}
+        <h1 class="produse-heading"> {% if categorie_curenta.icon_categorie %}
+                <i class="{{categorie_curenta.icon_categorie}}"></i>
+            {% endif %}
+            {{categorie_curenta.nume_categorie}}
+        </h1>
+        <p class="categ-descriere">{{categorie_curenta.descriere}}</p>
+    {% else %}
+        <h1 class="produse-heading"> Produse </h1>
+    {% endif %}
     <div class="sortare">
         <span>Sorteaza dupa pret: </span>
         <a href="?sort=a" {% if param_sortare == 'a' %}class="activ"{% endif %}>Crescator</a>
@@ -14,7 +29,15 @@
             <div class="masina-card">
                 <div class="card-content">
                     <h3> <a href = "{% url 'detalii_masina' masina.id %}"> {{ masina.marca.nume_marca }} {{ masina.model }} {{masina.an_fabricatie}} </a></h3>
-                    <p><strong>Categorie:</strong> {{ masina.categorie.nume_categorie }}</p>
+                    <p>
+                        <strong>Categorie:</strong>
+                        <a href="{% url 'produse_pe_categorie' masina.categorie.nume_categorie %}" class="link-categorie">
+                        {% if masina.categorie.icon_categorie %}
+                            <i class="{{masina.categorie.icon_categorie}}"></i>
+                        {% endif %}
+                        {{ masina.categorie.nume_categorie }}
+                        </a>
+                    </p>
                     <p><strong>Preț:</strong> {{ masina.pret_masina }} EUR</p>
                     <p><strong>Kilometraj:</strong> {{ masina.kilometraj }} km</p>
                 </div>
