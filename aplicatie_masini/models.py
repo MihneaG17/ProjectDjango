@@ -13,7 +13,6 @@ class Locatie(models.Model):
         return f"{self.adresa}, {self.oras}"
 
 class Marca(models.Model):
-    #id_marca = models.IntegerField()
     nume_marca = models.CharField(max_length=255, unique=True)
     tara_origine = models.CharField(max_length=255)
     an_infiintare = models.IntegerField()
@@ -22,7 +21,6 @@ class Marca(models.Model):
         return self.nume_marca
     
 class CategorieMasina(models.Model):
-    #id_categorie = models.IntegerField()
     nume_categorie = models.CharField(max_length=255)
     descriere = models.TextField()
     
@@ -30,7 +28,6 @@ class CategorieMasina(models.Model):
         return self.nume_categorie
  
 class Serviciu(models.Model):
-    #id_serviciu = models.IntegerField()
     nume_serviciu = models.CharField(max_length=255)
     pret_serviciu = models.FloatField()
     descriere_serviciu = models.TextField(null=True)
@@ -39,7 +36,6 @@ class Serviciu(models.Model):
         return self.nume_serviciu
 
 class Accesoriu(models.Model):
-    #id_accesoriu = models.IntegerField()
     nume_accesoriu = models.CharField(max_length=255)
     pret_accesoriu = models.FloatField()
     stoc_accesoriu = models.IntegerField()
@@ -57,7 +53,6 @@ class Masina(models.Model):
         GPL = 'GPL', 'GPL'
         ALTUL = 'ALTUL', 'Altul'
         
-    #id_masina = models.IntegerField() - gestionat automat de django
     marca = models.ForeignKey(Marca, on_delete=models.CASCADE)
     categorie = models.ForeignKey(CategorieMasina, on_delete=models.CASCADE)
     pret_masina = models.FloatField()
@@ -74,6 +69,7 @@ class Masina(models.Model):
     
     servicii = models.ManyToManyField(Serviciu, blank=True)
     accesorii = models.ManyToManyField(Accesoriu, blank=True)
+    imagine = models.ImageField(upload_to='imagini_masini/', null=True, blank=True)
     
     def __str__(self):
         return f"{self.marca.nume_marca} {self.model} ({self.an_fabricatie})"

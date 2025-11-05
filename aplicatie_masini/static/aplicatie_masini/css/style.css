@@ -83,7 +83,7 @@ main {
 }
 
 footer {
-    background: #111;
+    background: #333;
     color: #ddd;
     text-align: center;
     padding: 10px 0;
@@ -93,4 +93,221 @@ footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+/* Pagina produse */
+.produse-heading {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 2.5rem;
+}
+
+.lista-produse {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    justify-content: center;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.masina-card {
+    flex: 1 1 300px;
+    background-color: white;
+    border: 1px solid #9f9f9f;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 24px;
+    transition: all 0.3 ease-in-out;
+}
+.card-content a {
+    text-decoration: none;
+    color: #333;
+}
+.masina-card:hover {
+    transform: translateY(-5px); 
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); 
+}
+
+.masina-card h3 {
+    font-size: 1.6rem; 
+    font-weight: 600;  
+    color: #2c3e50; 
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.masina-card p {
+    font-size: 1rem; 
+    color: #555;      
+    margin-bottom: 10px;
+}
+
+.paginare {
+    text-align: center;
+    padding: 30px 0;
+    font-size: 1.1rem;
+}
+
+.current-page p {
+    color: #777;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.page-links a {
+    text-decoration: none;
+    color: #007bff;
+    border: 1px solid #ddd;
+    padding: 10px 18px;
+    margin: 0 5px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.page-links a:hover {
+    background-color: #007bff;
+    color: #ffffff;
+    border-color: #007bff;
+}
+
+/* Detalii masini */
+.container-detalii {
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    display: flex;
+    gap: 30px;
+}
+
+.detalii-imagine {
+    flex: 1;
+    min-width: 300px;
+}
+
+.detalii-imagine img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.detalii-imagine p {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 300px; 
+    background-color: #f4f4f4;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    color: #888;
+    text-align: center;
+}
+
+.detalii-continut {
+    flex: 1.5;
+}
+
+.detalii-continut h1 {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.detalii-continut h2 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #27ae60;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.detalii-continut h3 {
+    font-size: 1.6rem;
+    color: #333;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.detalii-ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.detalii-ul > li {
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    line-height: 1.5;
+    color: #555;
+}
+
+.detalii-ul > li > strong {
+    color: #111;
+    min-width: 160px;
+    display: inline-block;
+}
+
+.detalii-ul ul {
+    list-style-type: disc;
+    padding-left: 30px;
+    margin-top: 10px;
+}
+
+.detalii-ul ul li {
+    font-size: 1rem;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.div-eroare {
+    text-align: center;
+    padding: 40px;
+}
+
+.div-eroare h1 {
+    color: red;
+}
+
+.div-eroare p {
+    font-size: 1.2rem;
+    padding-bottom: 10px;
+}
+
+.div-eroare a {
+    text-decoration: none;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+}
+
+@media (max-width: 800px) {
+    .container-detalii {
+        flex-direction: column;
+        padding: 20px;
+        gap: 20px;
+    }
+
+    .detalii-continut h1 {
+        font-size: 2.2rem;
+    }
+
+    .detalii-continut h2 {
+        font-size: 1.8rem;
+    }
+
+    .detalii-ul > li > strong {
+        min-width: auto;
+        display: block;
+        margin-bottom: 6px;
+    }
 }

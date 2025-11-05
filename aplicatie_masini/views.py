@@ -1,8 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from datetime import date, datetime
 import locale
 from . import middleware
-from .models import Locatie
+from .models import Locatie, Masina, Marca, CategorieMasina, Serviciu, Accesoriu
+
 locale.setlocale(locale.LC_TIME, 'romanian')
 
 # Create your views here.
@@ -317,3 +319,64 @@ def afis_produse(request):
                       "nr_locatii": len(locatii),
                   }
         )
+
+def produse(request): 
+    nrPagina=request.GET.get("pagina")
+    if not nrPagina:
+        nrPagina=1
+    try:
+        nrPagina=int(nrPagina)
+    except (ValueError, TypeError):
+        return HttpResponse("Eroare: parametrul 'pagina' nu a primit o valoare numerica")
+    
+    masini = Masina.objects.all()
+    paginator = Paginator(masini, 10)
+    mesajEroare = None
+    try:
+        obPagina = paginator.page(nrPagina)
+    except EmptyPage:
+        obPagina=None
+        mesajEroare="Nu mai sunt produse"
+    return render(request, 'aplicatie_masini/produse.html', 
+                    {
+                        'pagina': obPagina,
+                        'eroare': mesajEroare,
+                        'ip_client':request.META.get('REMOTE_ADDR',''),
+                    }
+                  )
+
+def detalii_masina(request, id):
+    mesajEroare=None
+    try:
+        masina = Masina.objects.get(pk=id)
+        return render(request, 'aplicatie_masini/detalii_masina.html', 
+            {
+            'masina': masina,
+            'eroare': mesajEroare
+            }
+        )
+    except Masina.DoesNotExist:
+        mesajEroare="Masina pe care incerci sa o accesezi nu exista in baza de date"
+        masina=None
+        return render(request, 'aplicatie_masini/detalii_masina.html', 
+            {
+            'masina': masina,
+            'eroare': mesajEroare
+            }
+        )
+    
+
+from .forms import ContactForm
+
+def contact_view(request):
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():  
+            nume = form.cleaned_data['nume']
+            email = form.cleaned_data['email']
+            mesaj = form.cleaned_data['mesaj']
+            #procesarea datelor
+            return redirect('mesaj_trimis')
+    else:
+        form = ContactForm()
+    return render(request, 'aplicatie_exemplu/contact.html', {'form': form})

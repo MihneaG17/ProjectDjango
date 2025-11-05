@@ -35,7 +35,7 @@ class MasinaAdmin(admin.ModelAdmin):
             'fields': ('kilometraj', 'tip_combustibil','pret_masina', 'an_fabricatie', 'in_stoc') 
         }),
         ('Suplimentare', {
-            'fields': ('servicii', 'accesorii',),
+            'fields': ('servicii', 'accesorii','imagine',),
             'classes': ('collapse',),
         }),
     )

@@ -1,0 +1,33 @@
+{% extends "aplicatie_masini/baza.html" %}
+
+{% block title %} Produse {% endblock %}
+
+{% block main %}
+    <h1 class="produse-heading"> Produse </h1>
+    <div class="lista-produse">
+        {% for masina in pagina.object_list %}
+            <div class="masina-card">
+                <div class="card-content">
+                    <h3> <a href = "{% url 'detalii_masina' masina.id %}"> {{ masina.marca.nume_marca }} {{ masina.model }} {{masina.an_fabricatie}} </a></h3>
+                    <p><strong>Categorie:</strong> {{ masina.categorie.nume_categorie }}</p>
+                    <p><strong>Preț:</strong> {{ masina.pret_masina }} EUR</p>
+                    <p><strong>Kilometraj:</strong> {{ masina.kilometraj }} km</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="paginare">
+        <span class="current-page">
+                <p>Pagina {{ pagina.number }} din {{ pagina.paginator.num_pages }}.</p>
+        </span>
+        <span class="page-links">   
+            {% if pagina.has_previous %}
+                <a href="?pagina={{ pagina.previous_page_number }}"> « Anterior </a>
+            {% endif %}
+    
+            {% if pagina.has_next %}
+                <a href="?pagina={{ pagina.next_page_number }}"> Urmator » </a>
+            {% endif %}
+        </span>
+    </div>
+{% endblock %}

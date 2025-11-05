@@ -1,0 +1,63 @@
+{% extends "aplicatie_masini/baza.html" %}
+
+{% block title %} 
+    {% if eroare %}
+        Produs inexistent
+    {% else %}
+        {{ masina.marca.nume_marca }} {{ masina.model }} {{ masina.an_fabricatie }}
+    {% endif %}
+{% endblock %}
+{% block main %}
+    {% if eroare %}
+        <div class="div-eroare">
+            <h1>Eroare</h1>
+            <p>{{eroare}}</p>
+            <a href="{% url 'produse' %}">Inapoi la lista de produse</a>
+        </div>
+    {% else %}
+
+    <div class="container-detalii">
+        <div class="detalii-imagine">
+            {% if masina.imagine %}
+                <img src="{{ masina.imagine.url }}" alt="{{ masina.marca.nume_marca}}">
+            {% else %}
+                <p> Imaginea masinii va fi afisata aici </p>
+            {% endif %}
+        </div>
+        <div class="detalii-continut">
+            <h1>{{ masina.marca.nume_marca }} {{ masina.model }} </h1>
+            <h2> Pret: {{ masina.pret_masina }} EUR </h2>
+            <hr>
+            <h3> Detalii complete: </h3>
+            <ul class="detalii-ul">
+                <li><strong>Categorie:</strong> {{masina.categorie.nume_categorie}}</li>
+                <li><strong>An fabricatie:</strong> {{masina.an_fabricatie}}</li>
+                <li><strong>Kilometraj:</strong> {{masina.kilometraj}}</li>
+                <li><strong>Combustibil:</strong> {{masina.get_tip_combustibil_display}}</li>
+                <li><strong>In stoc:</strong> {% if masina.in_stoc %} Da {% else %} Nu {% endif %}</li>
+                <li><strong>Adaugata la data:</strong> {{masina.data_adaugarii}}</li>
+                <li>
+                    <strong>Servicii incluse:</strong>
+                    <ul>
+                        {% for serviciu in masina.servicii.all %}
+                            <li>{{ serviciu.nume_serviciu }} ({{ serviciu.pret_serviciu }} EUR) </li>
+                        {% empty %}
+                            <li>Niciun serviciu aditional inclus.</li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                <li>
+                    <strong>Accesorii incluse:</strong>
+                    <ul>
+                        {% for accesoriu in masina.accesorii.all %}
+                            <li>{{ accesoriu.nume_accesoriu }}</li>
+                        {% empty %}
+                            <li>Niciun accesoriu suplimentar inclus.</li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+    {% endif %}
+{% endblock %}
