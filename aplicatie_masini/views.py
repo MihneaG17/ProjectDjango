@@ -321,6 +321,7 @@ def afis_produse(request):
         )
 
 def produse(request): 
+    param_sortare=request.GET.get("sort")
     nrPagina=request.GET.get("pagina")
     if not nrPagina:
         nrPagina=1
@@ -330,6 +331,13 @@ def produse(request):
         return HttpResponse("Eroare: parametrul 'pagina' nu a primit o valoare numerica")
     
     masini = Masina.objects.all()
+    if param_sortare=='a':
+        masini=masini.order_by('pret_masina')
+    elif param_sortare=='d':
+        masini=masini.order_by('-pret_masina')
+    else:
+        masini=masini.order_by('-data_adaugarii') #implicit dupa data adaugarii
+        
     paginator = Paginator(masini, 10)
     mesajEroare = None
     try:
@@ -341,6 +349,7 @@ def produse(request):
                     {
                         'pagina': obPagina,
                         'eroare': mesajEroare,
+                        'param_sortare': param_sortare,
                         'ip_client':request.META.get('REMOTE_ADDR',''),
                     }
                   )

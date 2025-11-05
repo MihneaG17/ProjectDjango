@@ -4,6 +4,11 @@
 
 {% block main %}
     <h1 class="produse-heading"> Produse </h1>
+    <div class="sortare">
+        <span>Sorteaza dupa pret: </span>
+        <a href="?sort=a" {% if param_sortare == 'a' %}class="activ"{% endif %}>Crescator</a>
+        <a href="?sort=d" {% if param_sortare == 'd' %}class="activ"{% endif %}>Descrescator</a>
+    </div>
     <div class="lista-produse">
         {% for masina in pagina.object_list %}
             <div class="masina-card">
@@ -22,11 +27,11 @@
         </span>
         <span class="page-links">   
             {% if pagina.has_previous %}
-                <a href="?pagina={{ pagina.previous_page_number }}"> « Anterior </a>
+                <a href="?pagina={{ pagina.previous_page_number }}{% if param_sortare %}&sort={{ param_sortare }}{% endif %}"> « Anterior </a>
             {% endif %}
     
             {% if pagina.has_next %}
-                <a href="?pagina={{ pagina.next_page_number }}"> Urmator » </a>
+                <a href="?pagina={{ pagina.next_page_number }}{% if param_sortare %}&sort={{ param_sortare }}{% endif %}"> Urmator » </a>
             {% endif %}
         </span>
     </div>

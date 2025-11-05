@@ -96,6 +96,45 @@ footer {
 }
 
 /* Pagina produse */
+.sortare {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.sortare span {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #555;
+    margin-right: 10px;
+}
+
+.sortare a {
+    text-decoration: none;
+    font-weight: 500;
+    padding: 8px 18px;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    color: #333;
+    background-color: #f9f9f9;
+    transition: all 0.3s ease;
+}
+
+.sortare a:hover {
+    background-color: #e9e9e9;
+    border-color: #ccc;
+}
+
+.sortare a.activ {
+    background-color: #007bff; 
+    color: #ffffff;
+    border-color: #007bff;
+    font-weight: 700;
+}
+
 .produse-heading {
     text-align: center;
     color: #333;
