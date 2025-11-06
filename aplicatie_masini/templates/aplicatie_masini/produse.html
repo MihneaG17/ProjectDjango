@@ -24,6 +24,9 @@
         <a href="?sort=a" {% if param_sortare == 'a' %}class="activ"{% endif %}>Crescator</a>
         <a href="?sort=d" {% if param_sortare == 'd' %}class="activ"{% endif %}>Descrescator</a>
     </div>
+    {% if eroare %}
+        <p class="div-eroare">{{eroare}}</p>
+    {% endif %}
     <div class="lista-produse">
         {% for masina in pagina.object_list %}
             <div class="masina-card">

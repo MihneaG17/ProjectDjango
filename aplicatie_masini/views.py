@@ -275,32 +275,31 @@ def afis_log(request):
 
 #view-uri pentru template rendering
 def index(request):
+    categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
     return render(request,"aplicatie_masini/index.html",
         {
             "titlu_tab":"Magazin de masini",
             "banner_text":"Cele mai bune masini la un click distanta",
             "ip_client":request.META.get('REMOTE_ADDR',''),
+            "toate_categoriile":categorii_meniu,
         }
     )
 
 def despre(request):
+    categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
     return render(request, "aplicatie_masini/despre.html",
                   {
                       "ip_client":request.META.get('REMOTE_ADDR',''),
+                      "toate_categoriile":categorii_meniu,
                   }
         )
 
 def in_lucru(request):
+    categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
     return render(request, "aplicatie_masini/in_lucru.html",
                   {
                       "ip_client":request.META.get('REMOTE_ADDR',''),
-                  }
-        )
-
-def log_view(request):
-    return render(request, "aplicatie_masini/in_lucru.html",
-                  {
-                      "ip_client":request.META.get('REMOTE_ADDR',''),
+                      "toate_categoriile":categorii_meniu,
                   }
         )
 
@@ -330,8 +329,7 @@ def produse(request, nume_categorie=None):
     except (ValueError, TypeError):
         return HttpResponse("Eroare: parametrul 'pagina' nu a primit o valoare numerica")
     
-    categorii_meniu=CategorieMasina.objects.all()
-    categorii_meniu=categorii_meniu.order_by('nume_categorie')
+    categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
     categorie_curenta=None
     mesajEroare=None
     if nume_categorie:
@@ -356,7 +354,8 @@ def produse(request, nume_categorie=None):
         obPagina = paginator.page(nrPagina)
     except EmptyPage:
         obPagina=None
-        mesajEroare="Nu mai sunt produse"
+        if not mesajEroare:
+            mesajEroare="Nu mai sunt produse"
     return render(request, 'aplicatie_masini/produse.html', 
                     {
                         'pagina': obPagina,
@@ -370,8 +369,7 @@ def produse(request, nume_categorie=None):
 
 def detalii_masina(request, id):
     mesajEroare=None
-    categorii_meniu=CategorieMasina.objects.all()
-    categorii_meniu=categorii_meniu.order_by('nume_categorie')
+    categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
     try:
         masina = Masina.objects.get(pk=id)
         return render(request, 'aplicatie_masini/detalii_masina.html', 
