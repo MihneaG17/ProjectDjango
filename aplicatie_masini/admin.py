@@ -45,6 +45,7 @@ class MarcaAdmin(admin.ModelAdmin):
     search_fields=('nume_marca','tara_origine')
     list_filter=['tara_origine',]
     list_display = ('nume_marca', 'tara_origine')
+    fields = ['an_infiintare', 'nume_marca', 'tara_origine']
 
 class CategorieMasinaAdmin(admin.ModelAdmin):
     ordering = ['nume_categorie']

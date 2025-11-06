@@ -340,6 +340,7 @@ def produse(request, nume_categorie=None):
             masini=Masina.objects.filter(categorie=categorie_curenta)
         except CategorieMasina.DoesNotExist:
             mesajEroare="Categoria introdusa nu exista."
+            masini = Masina.objects.none()
     else:
         masini = Masina.objects.all()
     if not mesajEroare:
