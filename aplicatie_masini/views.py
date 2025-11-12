@@ -4,6 +4,7 @@ from datetime import date, datetime
 import locale
 from . import middleware
 from .models import Locatie, Masina, Marca, CategorieMasina, Serviciu, Accesoriu
+from .forms import MasinaFilterForm
 
 locale.setlocale(locale.LC_TIME, 'romanian')
 
@@ -322,6 +323,7 @@ def afis_produse(request):
 def produse(request, nume_categorie=None): 
     param_sortare=request.GET.get("sort")
     nrPagina=request.GET.get("pagina")
+    
     if not nrPagina:
         nrPagina=1
     try:
@@ -332,6 +334,8 @@ def produse(request, nume_categorie=None):
     categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
     categorie_curenta=None
     mesajEroare=None
+    form=MasinaFilterForm(request.GET)
+    
     if nume_categorie:
         try:
             categorie_curenta=CategorieMasina.objects.get(nume_categorie=nume_categorie)
@@ -341,6 +345,25 @@ def produse(request, nume_categorie=None):
             masini = Masina.objects.none()
     else:
         masini = Masina.objects.all()
+    
+    if request.GET:
+        if request.GET.get("model"):
+            masini=masini.filter(model__icontains=request.GET.get("model"))
+        if request.GET.get("marca"):
+            masini=masini.filter(marca__id=request.GET.get("marca"))
+        if request.GET.get("categorie"):
+            masini=masini.filter(categorie__id=request.GET.get("categorie"))
+        if request.GET.get("tip_combustibil"):
+            masini=masini.filter(tip_combustibil=request.GET.get("tip_combustibil"))
+        if request.GET.get("an_fabricatie"):
+            masini=masini.filter(an_fabricatie=request.GET.get("an_fabricatie"))
+        if request.GET.get("pret_min"):
+            masini=masini.filter(pret_masina__gte=request.GET.get("pret_min"))
+        if request.GET.get("pret_max"):
+            masini=masini.filter(pret_masina__lte=request.GET.get("pret_max"))
+        if request.GET.get("kilometraj_max"):
+            masini=masini.filter(kilometraj__lte=request.GET.get("kilometraj_max"))
+    
     if not mesajEroare:
         if param_sortare=='a':
             masini=masini.order_by('pret_masina')
@@ -363,6 +386,7 @@ def produse(request, nume_categorie=None):
                         'param_sortare': param_sortare,
                         'toate_categoriile': categorii_meniu,
                         'categorie_curenta': categorie_curenta,
+                        'form': form,
                         'ip_client':request.META.get('REMOTE_ADDR',''),
                     }
                   )
@@ -390,18 +414,3 @@ def detalii_masina(request, id):
             }
         )
     
-
-from .forms import ContactForm
-
-def contact_view(request):
-    if request.method == 'POST':
-        form = ContactForm(request.POST)
-        if form.is_valid():  
-            nume = form.cleaned_data['nume']
-            email = form.cleaned_data['email']
-            mesaj = form.cleaned_data['mesaj']
-            #procesarea datelor
-            return redirect('mesaj_trimis')
-    else:
-        form = ContactForm()
-    return render(request, 'aplicatie_exemplu/contact.html', {'form': form})

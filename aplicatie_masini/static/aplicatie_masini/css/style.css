@@ -148,6 +148,92 @@ footer {
     margin-right: 10px;
 }
 
+.filter-form {
+    display: flex;         
+    flex-wrap: wrap;      
+    align-items: flex-end;
+    gap: 12px;             
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+    margin-bottom: 30px;
+}
+
+
+.form-field {
+    display: flex;
+    flex-direction: column; 
+    flex: 1 1 150px;
+}
+
+
+.form-buttons {
+    display: flex;
+    gap: 10px;
+    flex: 0 1 auto;
+}
+
+.form-field label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #333;
+    margin-bottom: 6px;
+}
+
+.form-field input[type="text"],
+.form-field input[type="number"],
+.form-field input[type="decimal"],
+.form-field select {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 1rem;
+    color: #444;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box; 
+}
+
+.form-field input[type="text"]:focus,
+.form-field input[type="number"]:focus,
+.form-field input[type="decimal"]:focus,
+.form-field select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+}
+
+.btn {
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+}
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: #555;
+    border: 1px solid #ccc;
+}
+.btn-secondary:hover {
+    background-color: #f1f1f1;
+    color: #222;
+}
+
 .link-categorie {
     text-decoration: none;
     color: #007bff;
@@ -380,5 +466,15 @@ footer {
         min-width: auto;
         display: block;
         margin-bottom: 6px;
+    }
+
+    .filter-form {
+        flex-direction: column;
+        align-items: stretch; 
+    }
+    
+    .form-buttons {
+        justify-content: flex-end;
+        margin-top: 10px; 
     }
 }

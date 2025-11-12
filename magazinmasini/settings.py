@@ -51,6 +51,12 @@ MIDDLEWARE = [
     'aplicatie_masini.middleware.Procesare'
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+#AUTH_USER_MODEL = 'aplicatie_masini.CustomUser'
+
 ROOT_URLCONF = 'magazinmasini.urls'
 
 TEMPLATES = [

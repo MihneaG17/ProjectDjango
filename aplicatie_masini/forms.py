@@ -1,19 +1,12 @@
 from django import forms
+from .models import Marca, CategorieMasina, Masina
 
-class ContactForm(forms.Form):
-    nume = forms.CharField(max_length=100, label='Nume', required=True)
-    email = forms.EmailField(label='Email', required=True)
-    mesaj = forms.CharField(widget=forms.Textarea, label='Mesaj', required=True)
-    
-    def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if not email.endswith('@domeniu.com'):
-            raise forms.ValidationError("Adresa de email trebuie să fie de la domeniu.com")
-        return email
-    
-    def clean(self):
-        cleaned_data = super().clean()
-        email = cleaned_data.get("email")
-        confirm_email = cleaned_data.get("confirm_email")
-        if email and confirm_email and email != confirm_email:
-            raise forms.ValidationError("Adresele de email nu coincid.")
+class MasinaFilterForm(forms.Form):
+    model=forms.CharField(max_length=100, required=False, label="Model")
+    marca=forms.ModelChoiceField(queryset=Marca.objects.all(), required=False, label="Marca", empty_label="Toate marcile")
+    categorie=forms.ModelChoiceField(queryset=CategorieMasina.objects.all(), required=False, label="Categorie", empty_label="Toate categoriile")
+    tip_combustibil=forms.ChoiceField(choices=[('', 'Toate Tipurile')] + Masina.TipCombustibil.choices, required=False, label="Combustibil")
+    an_fabricatie=forms.IntegerField(required=False, label="An fabricatie")
+    kilometraj_max=forms.IntegerField(required=False, label="Kilometraj maxim")
+    pret_min=forms.DecimalField(max_digits=10,required=False, label="Pret minim")
+    pret_max=forms.DecimalField(max_digits=10,required=False, label="Pret maxim")
