@@ -10,6 +10,6 @@ urlpatterns = [
  	path("masina/<int:id>", views.detalii_masina, name="detalii_masina"),
 	path("despre", views.despre, name="despre"),
 	path("cos_virtual", views.in_lucru, name="cos_virtual"),
-	path("contact", views.in_lucru, name="contact"),
+	path("contact", views.contact, name="contact"),
  	path("locatii", views.afis_produse, name="locatii"),
 ]

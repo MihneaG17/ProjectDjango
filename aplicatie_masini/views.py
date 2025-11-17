@@ -29,18 +29,6 @@ def info(request):
                         {param_section}
                     """
     return render(request, 'aplicatie_masini/info.html', {'continut_info': continut_info} )
-    #return HttpResponse(f"""
-    #                 <html>
-    #                    <head>
-    #                    <title>Magazin masini</title>
-    #                 </head>
-    #                 <body>
-    #                    <h1>Informatii despre server </h1>
-    #                    <p>{afis_data(data_param)}</p>
-    #                    {param_section}
-    #                 </body>
-    #                 </html>
-    #                 """)
 
 def afis_data(data):
     if(not data):
@@ -323,17 +311,19 @@ def afis_produse(request):
 def produse(request, nume_categorie=None): 
     param_sortare=request.GET.get("sort")
     nrPagina=request.GET.get("pagina")
+    elemente_paginare_str=request.GET.get("elemente_afisate")
     
     if not nrPagina:
         nrPagina=1
     try:
         nrPagina=int(nrPagina)
     except (ValueError, TypeError):
-        return HttpResponse("Eroare: parametrul 'pagina' nu a primit o valoare numerica")
+        return HttpResponse("Eroare: parametrul 'pagina' nu a primit o valoare numerică")
     
     categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
     categorie_curenta=None
     mesajEroare=None
+    mesajPaginare=None
     form=MasinaFilterForm(request.GET)
     
     if nume_categorie:
@@ -341,7 +331,7 @@ def produse(request, nume_categorie=None):
             categorie_curenta=CategorieMasina.objects.get(nume_categorie=nume_categorie)
             masini=Masina.objects.filter(categorie=categorie_curenta)
         except CategorieMasina.DoesNotExist:
-            mesajEroare="Categoria introdusa nu exista."
+            mesajEroare="Categoria introdusă nu există."
             masini = Masina.objects.none()
     else:
         masini = Masina.objects.all()
@@ -371,22 +361,45 @@ def produse(request, nume_categorie=None):
             masini=masini.order_by('-pret_masina')
         else:
             masini=masini.order_by('-data_adaugarii') #implicit dupa data adaugarii
-        
-    paginator = Paginator(masini, 10)
-    try:
-        obPagina = paginator.page(nrPagina)
-    except EmptyPage:
+    
+    if not masini.exists() and not mesajEroare:
+        mesajEroare="Nu au fost găsite produse care să corespundă filtrelor"
         obPagina=None
-        if not mesajEroare:
-            mesajEroare="Nu mai sunt produse"
+    else: 
+        elemente_pe_pagina_int=10
+        if elemente_paginare_str:
+            try:
+                elemente_pe_pagina_int=int(elemente_paginare_str)
+                if elemente_pe_pagina_int<0:
+                    elemente_pe_pagina_int=10
+                mesajPaginare="În urma repaginării este posibil ca unele produse deja vizualizate să fie din nou afișate sau altele să fie sărite"
+            except ValueError:
+                mesajPaginare="Valoarea introdusă nu este de tip întreg"    
+        paginator = Paginator(masini, elemente_pe_pagina_int)
+        try:
+            obPagina = paginator.page(nrPagina)
+        except EmptyPage:
+            obPagina=None
+            if not mesajEroare:
+                mesajEroare="Nu au fost găsite produse"
+    
+    if form.is_valid():
+        cd=form.cleaned_data
+        if categorie_curenta:
+            masini=masini.filter(categorie=categorie_curenta)
+        elif cd.get('categorie'):
+            masini=masini.filter(categorie=cd.get('categorie'))
+            
     return render(request, 'aplicatie_masini/produse.html', 
                     {
                         'pagina': obPagina,
                         'eroare': mesajEroare,
+                        'mesaj_paginare': mesajPaginare,
                         'param_sortare': param_sortare,
                         'toate_categoriile': categorii_meniu,
                         'categorie_curenta': categorie_curenta,
                         'form': form,
+                        'request_get_string': request.GET.urlencode(),
                         'ip_client':request.META.get('REMOTE_ADDR',''),
                     }
                   )
@@ -413,4 +426,10 @@ def detalii_masina(request, id):
             'toate_categoriile': categorii_meniu,
             }
         )
-    
+
+def contact(request):
+    categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
+    return render(request, 'aplicatie_masini/contact.html', {
+        'ip_client': request.META.get('REMOTE_ADDR',''),
+        'toate_categoriile': categorii_meniu,
+    })

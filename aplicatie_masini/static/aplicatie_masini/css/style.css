@@ -149,10 +149,9 @@ footer {
 }
 
 .filter-form {
-    display: flex;         
-    flex-wrap: wrap;      
-    align-items: flex-end;
-    gap: 12px;             
+    display: flex;     
+    flex-direction: column; 
+    gap: 20px;             
     background-color: #f9f9f9;
     padding: 20px;
     border-radius: 12px;
@@ -160,18 +159,56 @@ footer {
     margin-bottom: 30px;
 }
 
+.filter-fields-wrapper {
+    display: flex;
+    align-items: flex-end; 
+    gap: 12px;
+    flex-wrap: nowrap; 
+}
 
 .form-field {
     display: flex;
     flex-direction: column; 
     flex: 1 1 150px;
+    position: relative;
+    flex: 1;
 }
 
+.form-error-field {
+    color: red;
+    position: absolute;
+    top: 100%;          
+    left: 0;
+    padding-top: 2px;    
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0;
+    padding: 0;
+}
+
+.form-error-general {
+    flex-basis: 100%;
+    color: #D8000C;
+    background-color: #FFD2D2; 
+    border: 1px solid #D8000C;
+    border-radius: 6px;
+    padding: 10px 15px;
+    text-align: center;
+    font-weight: 600;
+    margin: 0 0 15px 0;
+    padding: 10px 15px;
+}
+
+.form-error-general ul,
+.form-error-field ul {
+    list-style-type: none;
+}
 
 .form-buttons {
     display: flex;
     gap: 10px;
-    flex: 0 1 auto;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 10px;
 }
 
 .form-field label {
@@ -232,6 +269,10 @@ footer {
 .btn-secondary:hover {
     background-color: #f1f1f1;
     color: #222;
+}
+
+.mesaj-repaginare {
+    text-align: center;
 }
 
 .link-categorie {
@@ -446,6 +487,7 @@ footer {
     color: white;
     border-radius: 5px;
 }
+
 
 @media (max-width: 800px) {
     .container-detalii {

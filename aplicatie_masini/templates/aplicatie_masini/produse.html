@@ -22,45 +22,74 @@
 
     <div class="container-filtre"> 
         <form method="GET" action="" class="filter-form">
-            <div class="form-field">
-                {{ form.model.label_tag }}
-                {{ form.model }}
-            </div>
-            <div class="form-field">
-                {{ form.marca.label_tag }}
-                {{ form.marca }}
-            </div> 
-            <div class="form-field">
-                {{ form.categorie.label_tag }}
-                {{ form.categorie }}
-            </div>
-            <div class="form-field">
-                {{ form.tip_combustibil.label_tag }}
-                {{ form.tip_combustibil }}
-            </div>
-            <div class="form-field">
-                {{ form.an_fabricatie.label_tag }}
-                {{ form.an_fabricatie }}
-            </div>
-            <div class="form-field">
-                {{ form.kilometraj_max.label_tag }}
-                {{ form.kilometraj_max }}
-            </div>
-            <div class="form-field price-field">
-                {{ form.pret_min.label_tag }}
-                {{ form.pret_min }}
-            </div>
-            <div class="form-field price-field">
-                {{ form.pret_max.label_tag }}
-                {{ form.pret_max }}
+            {% if form.non_field_errors %}
+                <div class="form-error-general">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+            <div class="filter-fields-wrapper">
+                <div class="form-field">
+                    {{ form.model.label_tag }}
+                    {{ form.model }}
+                </div>
+                <div class="form-field">
+                    {{ form.marca.label_tag }}
+                    {{ form.marca }}
+                </div>
+                {% if not categorie_curenta %}
+                    <div class="form-field">
+                        {{ form.categorie.label_tag }}
+                        {{ form.categorie }}
+                        {% if form.categorie.errors %}
+                            <div class="form-error-field">{{ form.categorie.errors }}</div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <input type="hidden" name="categorie" value="{{ categorie_curenta.id }}">
+                {% endif %}
+                <div class="form-field">
+                    {{ form.tip_combustibil.label_tag }}
+                    {{ form.tip_combustibil }}
+                </div>
+                <div class="form-field">
+                    {{ form.an_fabricatie.label_tag }}
+                    {{ form.an_fabricatie }}
+                    {% if form.an_fabricatie.errors %}
+                        <div class="form-error-field">{{ form.an_fabricatie.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-field">
+                    {{ form.kilometraj_max.label_tag }}
+                    {{ form.kilometraj_max }}
+                </div>
+                <div class="form-field price-field">
+                    {{ form.pret_min.label_tag }}
+                    {{ form.pret_min }}
+                    {% if form.pret_min.errors %}
+                        <div class="form-error-field">{{ form.pret_min.errors }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-field price-field">
+                    {{ form.pret_max.label_tag }}
+                    {{ form.pret_max }}
+                </div>
+                <div class="form-field">
+                    {{ form.elemente_afisate.label_tag }}
+                    {{ form.elemente_afisate }}
+                    {% if form.elemente_afisate.errors %}
+                        <div class="form-error-field">{{ form.elemente_afisate.errors }}</div>
+                    {% endif %}
+                </div>
             </div>
             <div class="form-buttons">
                 <button type="submit" class="btn btn-primary">Filtrează</button>
-                <a href="{% url 'produse' %}" class="btn btn-secondary">Resetează filtrele</a>
+                <a href="{% url 'produse' %}" class="btn btn-secondary" onclick="return confirm('Ești sigur că vrei să resetezi filtrele? Toate câmpurile completate vor fi golite.');">Resetează filtrele</a>
             </div>
         </form>
     </div>
-
+    {% if mesaj_paginare %}
+        <p class="mesaj-repaginare">{{ mesaj_paginare }}</p>
+    {% endif %}
     <div class="sortare">
         <span>Sorteaza dupa pret: </span>
         <a href="?{{ request_get_string }}&sort=a" {% if param_sortare == 'a' %}class="activ"{% endif %}>Crescator</a>
@@ -89,18 +118,22 @@
             </div>
         {% endfor %}
     </div>
-    <div class="paginare">
-        <span class="current-page">
-                <p>Pagina {{ pagina.number }} din {{ pagina.paginator.num_pages }}.</p>
-        </span>
-        <span class="page-links">   
-            {% if pagina.has_previous %}
-                <a href="?{{ request_get_string }}&pagina={{ pagina.previous_page_number }}{% if param_sortare %}&sort={{ param_sortare }}{% endif %}"> « Anterior </a>
-            {% endif %}
-    
-            {% if pagina.has_next %}
-                <a href="?{{ request_get_string }}&pagina={{ pagina.next_page_number }}{% if param_sortare %}&sort={{ param_sortare }}{% endif %}"> Urmator » </a>
-            {% endif %}
-        </span>
-    </div>
+    {% if eroare %}
+        <span></span>
+    {% else %}
+        <div class="paginare">
+            <span class="current-page">
+                    <p>Pagina {{ pagina.number }} din {{ pagina.paginator.num_pages }}.</p>
+            </span>
+            <span class="page-links">   
+                {% if pagina.has_previous %}
+                    <a href="?{{ request_get_string }}&pagina={{ pagina.previous_page_number }}{% if param_sortare %}&sort={{ param_sortare }}{% endif %}"> « Anterior </a>
+                {% endif %}
+        
+                {% if pagina.has_next %}
+                    <a href="?{{ request_get_string }}&pagina={{ pagina.next_page_number }}{% if param_sortare %}&sort={{ param_sortare }}{% endif %}"> Urmator » </a>
+                {% endif %}
+            </span>
+        </div>
+    {% endif %}
 {% endblock %}
