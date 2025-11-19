@@ -92,8 +92,8 @@
     {% endif %}
     <div class="sortare">
         <span>Sorteaza dupa pret: </span>
-        <a href="?{{ request_get_string }}&sort=a" {% if param_sortare == 'a' %}class="activ"{% endif %}>Crescator</a>
-        <a href="?{{ request_get_string }}&sort=d" {% if param_sortare == 'd' %}class="activ"{% endif %}>Descrescator</a>
+        <a href="?sort=a{{ params_fara_sort }}" {% if param_sortare == 'a' %}class="activ"{% endif %}>Crescator</a>
+        <a href="?sort=d{{ params_fara_sort }}" {% if param_sortare == 'd' %}class="activ"{% endif %}>Descrescator</a>
     </div>
     {% if eroare %}
         <p class="div-eroare">{{eroare}}</p>

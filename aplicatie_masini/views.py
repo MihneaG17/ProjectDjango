@@ -1,10 +1,14 @@
 from django.shortcuts import render, redirect
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.conf import settings
 from datetime import date, datetime
 import locale
+import json
+import os
+import time
 from . import middleware
 from .models import Locatie, Masina, Marca, CategorieMasina, Serviciu, Accesoriu
-from .forms import MasinaFilterForm
+from .forms import MasinaFilterForm, ContactForm
 
 locale.setlocale(locale.LC_TIME, 'romanian')
 
@@ -341,8 +345,6 @@ def produse(request, nume_categorie=None):
             masini=masini.filter(model__icontains=request.GET.get("model"))
         if request.GET.get("marca"):
             masini=masini.filter(marca__id=request.GET.get("marca"))
-        if request.GET.get("categorie"):
-            masini=masini.filter(categorie__id=request.GET.get("categorie"))
         if request.GET.get("tip_combustibil"):
             masini=masini.filter(tip_combustibil=request.GET.get("tip_combustibil"))
         if request.GET.get("an_fabricatie"):
@@ -389,6 +391,12 @@ def produse(request, nume_categorie=None):
             masini=masini.filter(categorie=categorie_curenta)
         elif cd.get('categorie'):
             masini=masini.filter(categorie=cd.get('categorie'))
+    
+    param_fara_sort=""
+    for cheie in request.GET:
+        if cheie!="sort":
+            valoare=request.GET[cheie]
+            param_fara_sort+="&"+cheie+"="+valoare 
             
     return render(request, 'aplicatie_masini/produse.html', 
                     {
@@ -400,6 +408,7 @@ def produse(request, nume_categorie=None):
                         'categorie_curenta': categorie_curenta,
                         'form': form,
                         'request_get_string': request.GET.urlencode(),
+                        'params_fara_sort': param_fara_sort,
                         'ip_client':request.META.get('REMOTE_ADDR',''),
                     }
                   )
@@ -429,7 +438,35 @@ def detalii_masina(request, id):
 
 def contact(request):
     categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
+    if request.method== 'POST':
+        form=ContactForm(request.POST)
+        if form.is_valid():
+            date_mesaj=form.cleaned_data
+            date_mesaj.pop("confirmare_email", None)
+            date_mesaj["ip_adresa"]=request.META.get('REMOTE_ADDR','')
+            date_mesaj["data_ora_primire"]=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            timestamp=int(time.time())
+            nume_fisier=f"mesaj_{timestamp}"
+            if date_mesaj.get("urgent")==True:
+                nume_fisier+="_urgent"
+            nume_fisier+=".json"
+            
+            folder_mesaje=os.path.join(settings.BASE_DIR, 'mesaje')
+            os.makedirs(folder_mesaje,exist_ok=True)
+            cale_fisier=os.path.join(folder_mesaje,nume_fisier)
+            with open(cale_fisier, "w") as f:
+                json.dump(date_mesaj,f,indent=4,default=str)
+            return render(request, 'aplicatie_masini/contact.html', {
+                "form": ContactForm(),
+                "mesaj_succes": "Mesajul a fost trimis cu succes",
+                'ip_client': request.META.get('REMOTE_ADDR',''),
+                'toate_categoriile': categorii_meniu,
+            })
+    else:
+        form=ContactForm()
     return render(request, 'aplicatie_masini/contact.html', {
         'ip_client': request.META.get('REMOTE_ADDR',''),
         'toate_categoriile': categorii_meniu,
+        'form': form,
     })
