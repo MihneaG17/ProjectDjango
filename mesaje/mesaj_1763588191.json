@@ -1,0 +1,14 @@
+{
+    "nume": "Dobrin",
+    "prenume": "Gabriel",
+    "cnp": "5051117394436",
+    "email": "mihnea298@gmail.com",
+    "tip_mesaj": "review",
+    "subiect": "Mesaj de test -Review",
+    "minim_zile_asteptare": 6,
+    "mesaj": "Salut! Acesta este inca un mesaj de test pentru a verifica validarile formularului. Dobrin",
+    "varsta_formatata": "20 si 0 luni",
+    "urgent": false,
+    "ip_adresa": "127.0.0.1",
+    "data_ora_primire": "2025-11-19 23:36:31"
+}

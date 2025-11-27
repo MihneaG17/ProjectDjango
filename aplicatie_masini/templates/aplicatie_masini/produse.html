@@ -22,6 +22,11 @@
 
     <div class="container-filtre"> 
         <form method="GET" action="" class="filter-form">
+            {% if categorie_curenta and form.categorie.errors %}
+                <div class="form-error-general">
+                    {{ form.categorie.errors }}
+                </div>
+            {% endif %}
             {% if form.non_field_errors %}
                 <div class="form-error-general">
                     {{ form.non_field_errors }}
@@ -83,7 +88,7 @@
             </div>
             <div class="form-buttons">
                 <button type="submit" class="btn btn-primary">Filtrează</button>
-                <a href="{% url 'produse' %}" class="btn btn-secondary" onclick="return confirm('Ești sigur că vrei să resetezi filtrele? Toate câmpurile completate vor fi golite.');">Resetează filtrele</a>
+                <a href="{% url 'produse' %}{{ string_reset }}" class="btn btn-secondary" onclick="return confirm('Ești sigur că vrei să resetezi filtrele? Toate câmpurile completate vor fi golite.');">Resetează filtrele</a>
             </div>
         </form>
     </div>

@@ -34,6 +34,14 @@ class MasinaFilterForm(forms.Form):
             raise forms.ValidationError("Numarul de produse afisate nu poate fi negativ")
         return elemente_afisate
     
+    def clean_categorie(self):
+        categorie_trimisa=self.cleaned_data.get('categorie')
+        categorie_de_verificat=getattr(self, 'categorie_de_verificat', None)
+        if categorie_de_verificat:
+            if categorie_trimisa and categorie_de_verificat.id!=categorie_trimisa.id:
+                raise forms.ValidationError("Eroare de securitate: Nu aveți voie să modificați manual categoria curentă.")
+        return categorie_trimisa
+    
     def clean(self):
         cleaned_data=super().clean()
         pret_min=cleaned_data.get('pret_min')
@@ -84,10 +92,16 @@ def validare_cnp_cifre(value):
 
 def validare_cnp_corect(value):
     if value:
-        if value.startswith("1") or value.startswith("2"):
+        if value[0] not in ['1','2','5','6']:
+            raise forms.ValidationError("CNP-ul trebuie sa inceapa cu 1, 2, 5 sau 6.")
+        
+        if value[0] in ['1','2']:
             an_prefix="19"
+        elif value[0] in ['5','6']:
+            an_prefix="20"
         else:
-            raise forms.ValidationError("CNP-ul nu este valid")    
+            an_prefix="19"  
+            
         try:
             an_str=an_prefix+value[1:3]
             luna_str=value[3:5]
@@ -233,7 +247,13 @@ class ContactForm(forms.Form):
         if not cnp or not data_nasterii:
             return
         
-        an_prefix="19"
+        prima_cifra=cnp[0]
+        if prima_cifra in ["1","2"]:
+            an_prefix="19"
+        elif prima_cifra in ["5","6"]:
+            an_prefix="20"
+        else:
+            an_prefix="19"
         
         an_cnp=an_prefix+cnp[1:3]
         luna_cnp=cnp[3:5]

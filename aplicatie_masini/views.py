@@ -340,21 +340,32 @@ def produse(request, nume_categorie=None):
     else:
         masini = Masina.objects.all()
     
-    if request.GET:
-        if request.GET.get("model"):
-            masini=masini.filter(model__icontains=request.GET.get("model"))
-        if request.GET.get("marca"):
-            masini=masini.filter(marca__id=request.GET.get("marca"))
-        if request.GET.get("tip_combustibil"):
-            masini=masini.filter(tip_combustibil=request.GET.get("tip_combustibil"))
-        if request.GET.get("an_fabricatie"):
-            masini=masini.filter(an_fabricatie=request.GET.get("an_fabricatie"))
-        if request.GET.get("pret_min"):
-            masini=masini.filter(pret_masina__gte=request.GET.get("pret_min"))
-        if request.GET.get("pret_max"):
-            masini=masini.filter(pret_masina__lte=request.GET.get("pret_max"))
-        if request.GET.get("kilometraj_max"):
-            masini=masini.filter(kilometraj__lte=request.GET.get("kilometraj_max"))
+    form.categorie_de_verificat=categorie_curenta
+    if form.is_valid():
+        cd = form.cleaned_data
+
+        if categorie_curenta:
+            masini = masini.filter(categorie=categorie_curenta)
+        elif cd.get('categorie'):
+            masini = masini.filter(categorie=cd.get('categorie'))
+            
+        if cd.get('model'):
+            masini = masini.filter(model__icontains=cd.get('model'))
+        if cd.get('marca'):
+            masini = masini.filter(marca=cd.get('marca'))
+        if cd.get('tip_combustibil'):
+            masini = masini.filter(tip_combustibil=cd.get('tip_combustibil'))
+        if cd.get('an_fabricatie'):
+            masini = masini.filter(an_fabricatie=cd.get('an_fabricatie'))
+        if cd.get('pret_min'):
+            masini = masini.filter(pret_masina__gte=cd.get('pret_min'))
+        if cd.get('pret_max'):
+            masini = masini.filter(pret_masina__lte=cd.get('pret_max'))
+        if cd.get('kilometraj_max'):
+            masini = masini.filter(kilometraj__lte=cd.get('kilometraj_max'))
+        if cd.get('elemente_afisate'):
+            elemente_pe_pagina_int = cd.get('elemente_afisate')
+            mesajPaginare = "În urma repaginării este posibil ca unele produse deja vizualizate să fie din nou afișate sau altele să fie sărite"
     
     if not mesajEroare:
         if param_sortare=='a':
@@ -385,18 +396,15 @@ def produse(request, nume_categorie=None):
             if not mesajEroare:
                 mesajEroare="Nu au fost găsite produse"
     
-    if form.is_valid():
-        cd=form.cleaned_data
-        if categorie_curenta:
-            masini=masini.filter(categorie=categorie_curenta)
-        elif cd.get('categorie'):
-            masini=masini.filter(categorie=cd.get('categorie'))
-    
     param_fara_sort=""
     for cheie in request.GET:
         if cheie!="sort":
             valoare=request.GET[cheie]
             param_fara_sort+="&"+cheie+"="+valoare 
+    
+    string_reset=""
+    if param_sortare:
+        string_reset=f"?sort={param_sortare}"
             
     return render(request, 'aplicatie_masini/produse.html', 
                     {
@@ -409,6 +417,7 @@ def produse(request, nume_categorie=None):
                         'form': form,
                         'request_get_string': request.GET.urlencode(),
                         'params_fara_sort': param_fara_sort,
+                        'string_reset': string_reset,
                         'ip_client':request.META.get('REMOTE_ADDR',''),
                     }
                   )
