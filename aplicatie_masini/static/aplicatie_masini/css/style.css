@@ -615,6 +615,12 @@ footer {
     background-color: #024a97;
     transform: translateY(-2px); 
 }
+
+.register-logdiv {
+    text-align: center; 
+    margin-top: 20px;
+}
+
 @media (max-width: 800px) {
     .container-detalii {
         flex-direction: column;

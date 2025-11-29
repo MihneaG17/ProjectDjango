@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 import uuid
 
 # Create your models here.
@@ -75,3 +76,13 @@ class Masina(models.Model):
     def __str__(self):
         return f"{self.marca.nume_marca} {self.model} ({self.an_fabricatie})"
 
+class CustomUser(AbstractUser):
+    telefon=models.CharField(max_length=20, blank=True)
+    tara=models.CharField(max_length=100, blank=True)
+    judet=models.CharField(max_length=100, blank=True)
+    oras=models.CharField(max_length=100, blank=True)
+    strada=models.CharField(max_length=100, blank=True)
+    cod_postal=models.CharField(max_length=20, blank=True)
+    
+    def __str__(self):
+        return self.username

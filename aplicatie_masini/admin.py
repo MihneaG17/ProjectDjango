@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Locatie, Masina, Marca, CategorieMasina, Serviciu, Accesoriu
+from django.contrib.auth.admin import UserAdmin
+from .models import Locatie, Masina, Marca, CategorieMasina, Serviciu, Accesoriu, CustomUser
 
 admin.site.site_header = "Panou de Administrare Magazin de masini"
 admin.site.site_title = "Admin Site Masini"
@@ -62,10 +63,20 @@ class AccesoriuAdmin(admin.ModelAdmin):
     ordering = ['-pret_accesoriu']
     search_fields=('nume_accesoriu', 'pret_accesoriu')
     list_display = ('nume_accesoriu','pret_accesoriu')
-    
+
+class CustomUserAdmin(admin.ModelAdmin):
+    fieldsets= (
+        ('Informatii Generale', {
+            'fields': ('username', 'email', 'first_name', 'last_name')
+        }),
+        ('Informatii Specifice', {
+            'fields': ('telefon', 'tara','judet', 'oras', 'strada', 'cod_postal') 
+        }),
+    )
 admin.site.register(Locatie, LocatieAdmin)
 admin.site.register(Marca, MarcaAdmin)
 admin.site.register(Masina, MasinaAdmin)
 admin.site.register(CategorieMasina, CategorieMasinaAdmin)
 admin.site.register(Serviciu, ServiciuAdmin)
 admin.site.register(Accesoriu, AccesoriuAdmin)
+admin.site.register(CustomUser, CustomUserAdmin)

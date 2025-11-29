@@ -1,4 +1,6 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.forms import AuthenticationForm
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.conf import settings
 from datetime import date, datetime
@@ -8,7 +10,7 @@ import os
 import time
 from . import middleware
 from .models import Locatie, Masina, Marca, CategorieMasina, Serviciu, Accesoriu
-from .forms import MasinaFilterForm, ContactForm
+from .forms import MasinaFilterForm, ContactForm, CustomUserCreationForm
 
 locale.setlocale(locale.LC_TIME, 'romanian')
 
@@ -262,8 +264,7 @@ def afis_log(request):
         html.append("<p>Pagina/paginile cu cele mai multe accesari: " + ", ".join(pagini_max)+f"({max_cnt} accesari)</p>")
         html.append("<p>Pagina/paginile cu cele mai putine accesari: " + ", ".join(pagini_min)+f"({min_cnt} accesari)</p>")
     continut_log = "".join(html)
-    return render(request, 'aplicatie_masini/log.html', {'continut_log': continut_log})    
-    # return HttpResponse("".join(html))      
+    return render(request, 'aplicatie_masini/log.html', {'continut_log': continut_log})       
 
 
 #view-uri pentru template rendering
@@ -478,4 +479,19 @@ def contact(request):
         'ip_client': request.META.get('REMOTE_ADDR',''),
         'toate_categoriile': categorii_meniu,
         'form': form,
+    })
+
+def inregistrare(request):
+    categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
+    if request.method=="POST":
+        form=CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Contul a fost creat cu succes!")
+            return redirect('index')
+    else:
+        form=CustomUserCreationForm()
+    return render(request, 'aplicatie_masini/inregistrare.html', {
+        'form': form,
+        'toate_categoriile': categorii_meniu,
     })

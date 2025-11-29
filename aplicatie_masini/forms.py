@@ -1,5 +1,6 @@
 from django import forms
-from .models import Marca, CategorieMasina, Masina
+from django.contrib.auth.forms import UserCreationForm
+from .models import Marca, CategorieMasina, Masina, CustomUser
 import datetime
 import re
 
@@ -264,3 +265,41 @@ class ContactForm(forms.Form):
         zi_data=data_nasterii.day
         if int(an_cnp)!=an_data or int(luna_cnp)!=luna_data or int(zi_cnp)!=zi_data:
             raise forms.ValidationError({"cnp": "Datele din cnp nu corespund cu data nasterii"})
+        
+class CustomUserCreationForm(UserCreationForm):
+    class Meta:
+        model=CustomUser
+        fields=("username", "email", "first_name", "last_name", "telefon", "tara", "judet", "oras", "strada", "cod_postal")
+    
+    def clean_telefon(self):
+        telefon=self.cleaned_data.get('telefon')
+        if telefon:
+            if not re.match(r'^[\d\+\-\(\) ]+$', telefon):
+                raise forms.ValidationError("Numărul de telefon conține și alte caractere care nu sunt numere")
+        return telefon
+    
+    def clean_cod_postal(self):
+        cod_postal=self.cleaned_data.get('cod_postal')
+        if cod_postal:
+            if not cod_postal.isdigit():
+                raise forms.ValidationError("Codul poștal trebuie să conțină doar cifre")
+        return cod_postal
+    
+    def clean(self):
+        cleaned_data=super().clean()
+        oras=cleaned_data.get('oras')
+        judet=cleaned_data.get('judet')
+        tara=cleaned_data.get('tara')
+        if oras:
+            for char in oras:
+                if char.isdigit():
+                    self.add_error('oras', "Numele orașului nu poate conține cifre")
+        if judet:
+            for char in judet:
+                if char.isdigit():
+                    self.add_error('judet', "Numele judetului nu poate conține cifre")
+        if tara:
+            for char in tara:
+                if char.isdigit():
+                    self.add_error('tara', "Numele țării nu poate conține cifre")
+        return cleaned_data

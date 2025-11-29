@@ -1,0 +1,54 @@
+{% extends "aplicatie_masini/baza.html" %}
+{% block title %}
+    Înregistrare
+{% endblock %}
+
+{% block main %}
+    <div class="contact-wrapper">
+        <h1 class="contact-page-title">Creează un cont nou</h1>
+
+        <div class="contact-card">
+            <form method="POST" class="contact-form" novalidate>
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="alert alert-error">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% for field in form %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}" class="form-label">
+                            {{ field.label }}
+                            {% if field.field.required %}
+                                <span class="required">*</span>
+                            {% endif %}
+
+                            {{ field }}
+
+                            {% if field.errors %}
+                                <div class="field-error">
+                                    {% for error in field.errors %}
+                                        <span>{{ error }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </label>
+                    </div>
+                {% endfor %}
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-submit">Înregistrează-te</button>
+                </div>
+
+                <div class="register-logdiv">
+                    <p>Ai deja un cont? <a href="#">Autentifică-te aici</a>.</p>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+
+{% endblock %}

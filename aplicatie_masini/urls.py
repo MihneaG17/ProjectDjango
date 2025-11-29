@@ -11,5 +11,6 @@ urlpatterns = [
 	path("despre", views.despre, name="despre"),
 	path("cos_virtual", views.in_lucru, name="cos_virtual"),
 	path("contact", views.contact, name="contact"),
+	path("inregistrare", views.inregistrare, name="inregistrare"),
  	path("locatii", views.afis_produse, name="locatii"),
 ]
