@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import Marca, CategorieMasina, Masina, CustomUser
 import datetime
 import re
@@ -302,4 +302,12 @@ class CustomUserCreationForm(UserCreationForm):
             for char in tara:
                 if char.isdigit():
                     self.add_error('tara', "Numele țării nu poate conține cifre")
+        return cleaned_data
+
+class CustomAuthenticationForm(AuthenticationForm):
+    ramane_logat=forms.BooleanField(required=False, initial=False, label="Ramaneti logat timp de o zi")
+    
+    def clean(self):
+        cleaned_data=super().clean()
+        ramane_logat=self.cleaned_data.get('ramane_logat')
         return cleaned_data

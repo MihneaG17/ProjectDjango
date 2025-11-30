@@ -1,15 +1,17 @@
 {% extends "aplicatie_masini/baza.html" %}
 {% block title %}
-    Înregistrare
+    Login
 {% endblock %}
 
 {% block main %}
     <div class="contact-wrapper">
-        <h1 class="contact-page-title">Creează un cont nou</h1>
+        <h1 class="contact-page-title">Intră în cont</h1>
+        <p class="contact-page-subtitle">Bine ai revenit! Introdu datele pentru a continua.</p>
 
         <div class="contact-card">
             <form method="POST" class="contact-form" novalidate>
                 {% csrf_token %}
+                
                 {% if form.non_field_errors %}
                     <div class="alert alert-error">
                         {% for error in form.non_field_errors %}
@@ -17,38 +19,27 @@
                         {% endfor %}
                     </div>
                 {% endif %}
+
                 {% for field in form %}
                     <div class="form-group">
                         <label for="{{ field.id_for_label }}" class="form-label">
                             {{ field.label }}
-                            {% if field.field.required %}
-                                <span class="required">*</span>
-                            {% endif %}
-
-                            {{ field }}
-
-                            {% if field.errors %}
-                                <div class="field-error">
-                                    {% for error in field.errors %}
-                                        <span>{{ error }}</span>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
                         </label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="field-error">{{ field.errors }}</div>
+                        {% endif %}
                     </div>
                 {% endfor %}
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-submit">Înregistrează-te</button>
+                    <button type="submit" class="btn btn-submit">Logare</button>
                 </div>
-
-                <div class="register-logdiv">
-                    <p>Ai deja un cont? <a href="{% url 'login' %}">Autentifică-te aici</a>.</p>
-                </div>
-
+                
+                <p class="register-logdiv">
+                    Nu ai cont? <a href="{% url 'inregistrare' %}">Înregistrează-te aici</a>.
+                </p>
             </form>
         </div>
-
     </div>
-
 {% endblock %}

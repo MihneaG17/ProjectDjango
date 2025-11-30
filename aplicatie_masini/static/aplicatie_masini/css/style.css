@@ -538,6 +538,7 @@ footer {
 .contact-form input[type="email"],
 .contact-form input[type="number"],
 .contact-form input[type="date"],
+.contact-form input[type="password"],
 .contact-form select,
 .contact-form textarea {
     width: 100%;
@@ -619,6 +620,135 @@ footer {
 .register-logdiv {
     text-align: center; 
     margin-top: 20px;
+}
+
+.mesaje-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999; 
+    width: 90%;
+    max-width: 600px;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    padding: 15px 20px;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out; 
+}
+
+.close-btn {
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-left: 15px;
+}
+
+/* Profil */
+.menu-list > li:last-child .submenu { 
+    left: auto;  
+    right: 0;    
+}
+
+.profile-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.avatar-circle {
+    width: 80px;
+    height: 80px;
+    background-color: #eef2f7; 
+    color: #3498db;            
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;         
+    margin: 0 auto 15px auto;  
+}
+
+.profile-header h2 {
+    margin: 5px 0;
+    color: #2c3e50;
+}
+
+.username-tag {
+    color: #7f8c8d;
+    font-weight: 600;
+    margin: 0;
+}
+
+.email-tag {
+    color: #95a5a6;
+    font-size: 0.9rem;
+}
+
+.divider {
+    border: 0;
+    border-top: 1px solid #eaeaea;
+    margin: 25px 0;
+}
+
+.profile-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; 
+    gap: 20px;
+}
+
+.info-box {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+.info-box.full-width {
+    grid-column: 1 / -1; 
+}
+
+.info-box .label {
+    display: block;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: #888;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.info-box .value {
+    font-size: 1.1rem;
+    color: #333;
+    font-weight: 500;
+}
+
+.profile-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.btn-danger {
+    background-color: #e74c3c;
+    color: white;
+    text-decoration: none;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-weight: 600;
+    transition: background 0.3s;
+}
+.btn-danger:hover {
+    background-color: #c0392b;
 }
 
 @media (max-width: 800px) {

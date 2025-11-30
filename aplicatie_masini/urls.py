@@ -12,5 +12,9 @@ urlpatterns = [
 	path("cos_virtual", views.in_lucru, name="cos_virtual"),
 	path("contact", views.contact, name="contact"),
 	path("inregistrare", views.inregistrare, name="inregistrare"),
+	path("login", views.login_view, name="login"),
+	path("logout", views.logout_view, name="logout"),
+	path("profil", views.profil_view, name="profil"),
+	path("change-password", views.change_password_view, name="change-password"),
  	path("locatii", views.afis_produse, name="locatii"),
 ]

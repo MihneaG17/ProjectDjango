@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.contrib import messages
 from django.conf import settings
 from datetime import date, datetime
 import locale
@@ -10,7 +11,7 @@ import os
 import time
 from . import middleware
 from .models import Locatie, Masina, Marca, CategorieMasina, Serviciu, Accesoriu
-from .forms import MasinaFilterForm, ContactForm, CustomUserCreationForm
+from .forms import MasinaFilterForm, ContactForm, CustomUserCreationForm, CustomAuthenticationForm
 
 locale.setlocale(locale.LC_TIME, 'romanian')
 
@@ -487,11 +488,58 @@ def inregistrare(request):
         form=CustomUserCreationForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "Contul a fost creat cu succes!")
             return redirect('index')
     else:
         form=CustomUserCreationForm()
     return render(request, 'aplicatie_masini/inregistrare.html', {
+        'form': form,
+        'toate_categoriile': categorii_meniu,
+    })
+
+def login_view(request):
+    categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
+    if request.method=="POST":
+        form=CustomAuthenticationForm(data=request.POST, request=request)
+        if form.is_valid():
+            user=form.get_user()
+            login(request, user)
+            if not form.cleaned_data.get('ramane_logat'):
+                request.session.set_expiry(0)
+            else:
+                request.session.set_expiry(24*60*60)
+            return redirect('profil')
+    else:
+        form=CustomAuthenticationForm()
+    return render(request, 'aplicatie_masini/login.html', {
+        'form': form,
+        'toate_categoriile': categorii_meniu,
+    })
+
+def logout_view(request):
+    logout(request)
+    return redirect('index')
+
+def profil_view(request):
+    categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
+    return render(request, 'aplicatie_masini/profil.html', {
+        'toate_categoriile': categorii_meniu,
+    })
+
+def change_password_view(request):
+    categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
+    if request.method=="POST":
+        form=PasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            form.save()
+            update_session_auth_hash(request, request.user)
+            messages.success(request, 'Parola a fost actualizata')
+            return redirect('index')
+        else:
+            messages.error(request, 'Exista erori')
+    else:
+        form=PasswordChangeForm(user=request.user)
+        
+    return render(request, 'aplicatie_masini/change-password.html', {
         'form': form,
         'toate_categoriile': categorii_meniu,
     })

@@ -45,11 +45,11 @@
                         </a>
                         <ul class="submenu">
                             {% if user.is_authenticated %}
-                                <li><a href="#">Profil</a></li>
-                                <li><a href="#">Logout</a></li>
+                                <li><a href="{% url 'profil' %}">Profil</a></li>
+                                <li><a href="{% url 'logout' %}">Logout</a></li>
                             {% else %}
                                 <li><a href="{% url 'inregistrare' %}">Înregistrare</a></li>
-                                <li><a href="#">Login</a></li>
+                                <li><a href="{% url 'login' %}">Login</a></li>
                             {% endif %}
                         </ul>
                     </li>
