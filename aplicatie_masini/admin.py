@@ -70,7 +70,7 @@ class CustomUserAdmin(admin.ModelAdmin):
             'fields': ('username', 'email', 'first_name', 'last_name')
         }),
         ('Informatii Specifice', {
-            'fields': ('telefon', 'tara','judet', 'oras', 'strada', 'cod_postal') 
+            'fields': ('telefon', 'tara','judet', 'oras', 'strada', 'cod_postal', 'cod', 'email_confirmat') 
         }),
     )
 admin.site.register(Locatie, LocatieAdmin)

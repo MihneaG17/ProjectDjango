@@ -138,3 +138,20 @@ MEDIA_URL = '/media/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+#Setari e-mail
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587 #autentificare user
+EMAIL_USE_TLS = True 
+EMAIL_HOST_USER = 'mihneadjango@gmail.com' #user
+EMAIL_HOST_PASSWORD = 'vqya fqcm gzzq aowo'    #vqya fqcm gzzq aowo
+DEFAULT_FROM_EMAIL = 'Mihnea-Dobrin <mihneadjango@gmail.com>'
+
+ADMINS = [
+    ('Mihnea', 'mihneadjango@gmail.com'),
+]
+
+
+

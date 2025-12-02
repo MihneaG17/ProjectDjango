@@ -16,5 +16,6 @@ urlpatterns = [
 	path("logout", views.logout_view, name="logout"),
 	path("profil", views.profil_view, name="profil"),
 	path("change-password", views.change_password_view, name="change-password"),
+	path("confirmare-succes/<str:cod_confirmare>/", views.confirmare_succes, name="confirmare-succes"),
  	path("locatii", views.afis_produse, name="locatii"),
 ]

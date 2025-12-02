@@ -4,13 +4,17 @@ from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib import messages
 from django.conf import settings
+from django.core.mail import send_mail
+from django.utils.crypto import get_random_string
+from django.urls import reverse
+from django.template.loader import render_to_string
 from datetime import date, datetime
 import locale
 import json
 import os
 import time
 from . import middleware
-from .models import Locatie, Masina, Marca, CategorieMasina, Serviciu, Accesoriu
+from .models import Locatie, Masina, Marca, CategorieMasina, Serviciu, Accesoriu, CustomUser
 from .forms import MasinaFilterForm, ContactForm, CustomUserCreationForm, CustomAuthenticationForm
 
 locale.setlocale(locale.LC_TIME, 'romanian')
@@ -487,7 +491,39 @@ def inregistrare(request):
     if request.method=="POST":
         form=CustomUserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
+            user=form.save(commit=False)
+            user.cod=get_random_string(length=15)
+            user.save()
+
+            #cale_relativa=f"/aplicatie_masini/confirmare-succes/{user.cod}"
+            cale_relativa = reverse("confirmare-succes", args=[user.cod])
+            link_complet=request.build_absolute_uri(cale_relativa)
+            
+            cale_logo=settings.STATIC_URL + "aplicatie_masini/imagini/logo-site.png"
+            url_logo=request.build_absolute_uri(cale_logo)
+            
+            context={
+                'nume': user.last_name,
+                'prenume': user.first_name,
+                'username': user.username,
+                'link_confirmare': link_complet,
+                'url_logo': url_logo,
+                }
+            html_content=render_to_string('aplicatie_masini/email-confirmare.html', context)
+            mesaj=f"Salut {user.username}, confirma contul aici: {link_complet}"
+            
+            try:
+                send_mail(
+                    subject='Confirmare cont - Magazin masini',
+                    message=mesaj,
+                    html_message=html_content,
+                    from_email='mihneadjango@gmail.com',
+                    recipient_list=['mihneadjango@gmail.com', user.email],
+                    fail_silently=False,
+                )
+                messages.success(request, f"Contul a fost creat! Un email de confirmare a fost trimis la {user.email}.")
+            except Exception as e:
+                messages.error(request, f"Contul a fost creat, dar nu am putut trimite emailul. Eroare: {e}")
             return redirect('index')
     else:
         form=CustomUserCreationForm()
@@ -502,12 +538,16 @@ def login_view(request):
         form=CustomAuthenticationForm(data=request.POST, request=request)
         if form.is_valid():
             user=form.get_user()
-            login(request, user)
-            if not form.cleaned_data.get('ramane_logat'):
-                request.session.set_expiry(0)
+            
+            if user.email_confirmat:
+                login(request, user)
+                if not form.cleaned_data.get('ramane_logat'):
+                    request.session.set_expiry(0)
+                else:
+                    request.session.set_expiry(24*60*60)
+                return redirect('profil')
             else:
-                request.session.set_expiry(24*60*60)
-            return redirect('profil')
+                messages.error(request, "Te rugăm să îți confirmi adresa de mail pentru a te putea loga.")
     else:
         form=CustomAuthenticationForm()
     return render(request, 'aplicatie_masini/login.html', {
@@ -543,3 +583,20 @@ def change_password_view(request):
         'form': form,
         'toate_categoriile': categorii_meniu,
     })
+    
+def confirmare_succes(request, cod_confirmare):
+    categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
+    try:
+        user=CustomUser.objects.get(cod=cod_confirmare)
+        user.email_confirmat=True
+        user.save()
+        messages.success(request, "Contul a fost confirmat cu succes!")
+    except CustomUser.DoesNotExist:
+        messages.error(request, "Link-ul de confirmare este invalid sau a fost deja folosit.")
+    except Exception as e:
+        messages.error(request, "A apărut o eroare la confirmarea contului.")
+    return render(request, 'aplicatie_masini/confirmare-succes.html', {
+        'toate_categoriile': categorii_meniu,
+        'ip_client': request.META.get('REMOTE_ADDR',''),
+    })
+    

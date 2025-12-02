@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; color: #333; }
+        .container { padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .logo-img { 
+            display: block; 
+            margin: 0 auto 20px auto; 
+            max-width: 150px;      
+            height: auto; 
+        }
+        .btn {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="{{ url_logo }}" alt="Logo" class="logo-img">
+        <h2>Bun venit, {{ prenume }} {{ nume }}!</h2>
+        <p>Salut <strong>{{ username }}</strong>,</p>
+        
+        <p>Îți mulțumim că te-ai înregistrat pe site-ul <em>Magazin Masini</em>.</p>
+        
+        <p>Pentru a activa contul și a confirma adresa de e-mail, te rugăm să accesezi link-ul de mai jos:</p>
+        
+        <p>
+            <a href="{{ link_confirmare }}" class="btn">Confirmă e-mailul</a>
+        </p>
+        
+        <p style="font-size: 0.9em; color: #777;">
+            Sau copiază acest link în browser:<br>
+            {{ link_confirmare }}
+        </p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,43 @@
+{% extends "aplicatie_masini/baza.html" %}
+{% load static %}
+
+{% block title %} Confirmare mail {% endblock %}
+
+{% block main %}
+<div class="conf-wrapper">
+    <div class="conf-card">
+        <div>
+            {% if messages %}
+                {% for message in messages %}
+                    {% if message.tags == 'success' %}
+                        <i class="fa-solid fa-check-circle conf-icon-success"></i>
+                    {% else %}
+                        <i class="fa-solid fa-circle-exclamation conf-icon-error"></i>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <i class="fa-solid fa-envelope conf-icon-default"></i>
+            {% endif %}
+        </div>
+
+        <h1 class="conf-title">Confirmare Cont</h1>
+        {% if messages %}
+            <div class="conf-message-box">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="color: #777; margin-bottom: 30px;">Nu există mesaje noi.</p>
+        {% endif %}
+        <div class="conf-actions">
+            <a href="{% url 'login' %}" class="conf-btn conf-btn-login">
+                Autentificare
+            </a>
+            <a href="{% url 'index' %}" class="conf-btn conf-btn-home">
+                Acasă
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

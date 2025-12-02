@@ -83,6 +83,9 @@ class CustomUser(AbstractUser):
     oras=models.CharField(max_length=100, blank=True)
     strada=models.CharField(max_length=100, blank=True)
     cod_postal=models.CharField(max_length=20, blank=True)
+    cod=models.CharField(max_length=100, blank=True, null=True)
+    email_confirmat=models.BooleanField(default=False)
+    
     
     def __str__(self):
         return self.username

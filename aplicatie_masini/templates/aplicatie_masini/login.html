@@ -12,6 +12,16 @@
             <form method="POST" class="contact-form" novalidate>
                 {% csrf_token %}
                 
+                {% if messages %}
+                    <div class="messages-box" style="margin-bottom: 20px;">
+                        {% for message in messages %}
+                            <div class="alert {% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                
                 {% if form.non_field_errors %}
                     <div class="alert alert-error">
                         {% for error in form.non_field_errors %}
