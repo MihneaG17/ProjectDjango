@@ -83,9 +83,19 @@ class CustomUser(AbstractUser):
     oras=models.CharField(max_length=100, blank=True)
     strada=models.CharField(max_length=100, blank=True)
     cod_postal=models.CharField(max_length=20, blank=True)
+    
     cod=models.CharField(max_length=100, blank=True, null=True)
     email_confirmat=models.BooleanField(default=False)
     
     
     def __str__(self):
         return self.username
+    
+#pentru task-ul cu logari suspecte din lab7
+class IncercareLogare(models.Model):
+    username_folosit=models.CharField(max_length=100, null=True, blank=True)
+    ip_folosit=models.CharField(max_length=100)
+    data_incercare=models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"Incercare de conectare de pe ip-ul {self.ip_folosit} la data {self.data_incercare}"

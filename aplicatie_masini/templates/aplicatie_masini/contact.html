@@ -8,10 +8,17 @@
     <div class="contact-wrapper">
         <h1 class="contact-page-title">Formular de contact</h1>
         <p class="contact-page-subtitle"> Ai o întrebare, reclamație sau o cerere? Completează formularul de mai jos. </p>
-        {% if mesaj_succes %}
-        <div class="alert alert-success">
-            {{ mesaj_succes }}
-        </div>
+        {% if mesaj_succes %} <!--de modificat aici pe viitor - sa trimit si mesajele de succes tot prin render-->
+            <div class="alert alert-success">
+                {{ mesaj_succes }}
+            </div>
+        {% endif %}
+        {% if messages %}
+            {% for mesaj in messages %}
+                <div class="alert alert-{{ mesaj.tags }}">
+                    {{ mesaj }}
+                </div>
+            {% endfor %}
         {% endif %}
 
         <div class="contact-card">

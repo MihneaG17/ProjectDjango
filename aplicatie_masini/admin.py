@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Locatie, Masina, Marca, CategorieMasina, Serviciu, Accesoriu, CustomUser
+from .models import Locatie, Masina, Marca, CategorieMasina, Serviciu, Accesoriu, CustomUser, IncercareLogare
 
 admin.site.site_header = "Panou de Administrare Magazin de masini"
 admin.site.site_title = "Admin Site Masini"
@@ -80,3 +80,4 @@ admin.site.register(CategorieMasina, CategorieMasinaAdmin)
 admin.site.register(Serviciu, ServiciuAdmin)
 admin.site.register(Accesoriu, AccesoriuAdmin)
 admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(IncercareLogare)

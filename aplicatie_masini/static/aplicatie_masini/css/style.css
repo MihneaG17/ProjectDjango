@@ -11,6 +11,11 @@ body {
     flex-direction: column;
 }
 
+.logo-img {
+    width: 55px;
+    height: 55px;
+}
+
 .topbar {
     background: #222;
     color: #fff;

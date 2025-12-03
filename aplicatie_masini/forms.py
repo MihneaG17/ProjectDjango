@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import Marca, CategorieMasina, Masina, CustomUser
+from django.core.mail import mail_admins
 import datetime
 import re
 
@@ -285,6 +286,21 @@ class CustomUserCreationForm(UserCreationForm):
                 raise forms.ValidationError("Codul poștal trebuie să conțină doar cifre")
         return cod_postal
     
+    #validare impotriva inregistrarii cu user-ul admin
+    def clean_username(self):
+        username=self.cleaned_data.get('username')
+        mail=self.data.get('email','Nespecificat')
+        if username and username.lower()=="admin":
+            subiect="Cineva incearca sa ne preia site-ul"
+            mesaj_text=f"Cineva a incercat sa se inregistreze cu username-ul admin. Adresa de mail folosita este {mail}"
+            mesaj_html=f"""
+                    <h1 style="color: red">{subiect}</h1>
+                    <p>Mail folosit: {mail} </p>
+                """
+            mail_admins(subject=subiect, message=mesaj_text, html_message=mesaj_html)
+            raise forms.ValidationError("Acest username nu este disponibil")
+        return username
+    
     def clean(self):
         cleaned_data=super().clean()
         oras=cleaned_data.get('oras')
@@ -297,7 +313,7 @@ class CustomUserCreationForm(UserCreationForm):
         if judet:
             for char in judet:
                 if char.isdigit():
-                    self.add_error('judet', "Numele judetului nu poate conține cifre")
+                    self.add_error('judet', "Numele județului nu poate conține cifre")
         if tara:
             for char in tara:
                 if char.isdigit():

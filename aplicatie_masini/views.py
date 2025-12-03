@@ -4,23 +4,26 @@ from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib import messages
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import send_mail, mail_admins
+from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.urls import reverse
 from django.template.loader import render_to_string
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import locale
 import json
 import os
 import time
 from . import middleware
-from .models import Locatie, Masina, Marca, CategorieMasina, Serviciu, Accesoriu, CustomUser
+from .models import Locatie, Masina, Marca, CategorieMasina, Serviciu, Accesoriu, CustomUser, IncercareLogare
 from .forms import MasinaFilterForm, ContactForm, CustomUserCreationForm, CustomAuthenticationForm
-
+import logging
 locale.setlocale(locale.LC_TIME, 'romanian')
 
 # Create your views here.
 from django.http import HttpResponse
+
+logger=logging.getLogger('django')
 
 def info(request):
     keys = list(request.GET.keys())
@@ -319,6 +322,8 @@ def afis_produse(request):
         )
 
 def produse(request, nume_categorie=None): 
+    logger.debug(f"Accesare pagina de produse. Parametrii GET {request.GET}") #debug 1- pentru a vedea parametrii get (filtrele) aplicate
+    
     param_sortare=request.GET.get("sort")
     nrPagina=request.GET.get("pagina")
     elemente_paginare_str=request.GET.get("elemente_afisate")
@@ -454,6 +459,8 @@ def detalii_masina(request, id):
 def contact(request):
     categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
     if request.method== 'POST':
+        logger.debug(f"Datele brute primite din formularul de contact: {request.POST}") #debug 2
+        
         form=ContactForm(request.POST)
         if form.is_valid():
             date_mesaj=form.cleaned_data
@@ -467,17 +474,47 @@ def contact(request):
                 nume_fisier+="_urgent"
             nume_fisier+=".json"
             
-            folder_mesaje=os.path.join(settings.BASE_DIR, 'mesaje')
-            os.makedirs(folder_mesaje,exist_ok=True)
-            cale_fisier=os.path.join(folder_mesaje,nume_fisier)
-            with open(cale_fisier, "w") as f:
-                json.dump(date_mesaj,f,indent=4,default=str)
-            return render(request, 'aplicatie_masini/contact.html', {
-                "form": ContactForm(),
-                "mesaj_succes": "Mesajul a fost trimis cu succes",
-                'ip_client': request.META.get('REMOTE_ADDR',''),
-                'toate_categoriile': categorii_meniu,
-            })
+            try:
+                folder_mesaje=os.path.join(settings.BASE_DIR, 'mesaje')
+                os.makedirs(folder_mesaje,exist_ok=True)
+                cale_fisier=os.path.join(folder_mesaje,nume_fisier)
+                with open(cale_fisier, "w") as f:
+                #with open("Z:/nuexista/fisier.json", "w") as f: #---test pentru trimitere mail-uri admini
+                    json.dump(date_mesaj,f,indent=4,default=str)
+                return render(request, 'aplicatie_masini/contact.html', {
+                    "form": ContactForm(),
+                    "mesaj_succes": "Mesajul a fost trimis cu succes",
+                    'ip_client': request.META.get('REMOTE_ADDR',''),
+                    'toate_categoriile': categorii_meniu,
+                })
+            except Exception as e:
+                
+                logger.error(f"Eroare la scrierea fisierului JSON: {e}") #error 1
+                
+                subiect_eroare=f"Eroare la salvarea mesajului de contact: {nume_fisier}"
+                mesaj_text=f"A aparut o eroare la scrierea mesajelor pe disc: {e}"
+                mesaj_html = f"""
+                    <h1>Atentie administratori!</h1>
+                    <p>Sistemul nu a putut salva un mesaj de contact primit.</p>
+                    <p><strong>Detalii eroare:</strong></p>
+                    <div style="background-color: red; color: white; padding: 15px; border-radius: 5px;">
+                        {e}
+                    </div>
+                    <p>Va rugam sa verificati spatiul pe disc si permisiunile folderului.</p>
+                """
+                mail_admins(
+                    subject=subiect_eroare,
+                    message=mesaj_text,
+                    html_message=mesaj_html
+                )
+                messages.error(request, "Ne pare rău, a apărut o eroare tehnică și mesajul nu a putut fi salvat. Administratorii au fost notificați.")
+                
+                return render(request, 'aplicatie_masini/contact.html', {
+                    "form": form,
+                    'toate_categoriile': categorii_meniu,
+                })
+        else:
+            logger.warning(f"Formular de contact invalid. Erori: {form.errors}") #warning 2
     else:
         form=ContactForm()
     return render(request, 'aplicatie_masini/contact.html', {
@@ -495,6 +532,8 @@ def inregistrare(request):
             user.cod=get_random_string(length=15)
             user.save()
 
+            logger.info(f"Utilizator nou inregistrat - {user.username}") #info 1
+            
             #cale_relativa=f"/aplicatie_masini/confirmare-succes/{user.cod}"
             cale_relativa = reverse("confirmare-succes", args=[user.cod])
             link_complet=request.build_absolute_uri(cale_relativa)
@@ -523,6 +562,7 @@ def inregistrare(request):
                 )
                 messages.success(request, f"Contul a fost creat! Un email de confirmare a fost trimis la {user.email}.")
             except Exception as e:
+                logger.critical(f"Eroare critica: Nu s-a putut trimite email de confirmare pentru userul '{user.username}'. Eroare: {e}") #critical 2
                 messages.error(request, f"Contul a fost creat, dar nu am putut trimite emailul. Eroare: {e}")
             return redirect('index')
     else:
@@ -541,13 +581,42 @@ def login_view(request):
             
             if user.email_confirmat:
                 login(request, user)
+                
+                logger.info(f"Utilizator logat cu succes - {user.username}") #info 2
+                
                 if not form.cleaned_data.get('ramane_logat'):
                     request.session.set_expiry(0)
                 else:
                     request.session.set_expiry(24*60*60)
                 return redirect('profil')
             else:
+                logger.warning(f"Tentativa de login cu email neconfirmat: {user.username}") #warning 1
+                
                 messages.error(request, "Te rugăm să îți confirmi adresa de mail pentru a te putea loga.")
+        else:
+            ip=request.META.get('REMOTE_ADDR')
+            user_incercat=request.POST.get('username')
+            IncercareLogare.objects.create(username_folosit=user_incercat, ip_folosit=ip)
+            
+            timp_acum=timezone.now()
+            limita_timp=timp_acum-timedelta(minutes=2)
+            nr_incercari=IncercareLogare.objects.filter(ip_folosit=ip, data_incercare__gte=limita_timp).count()
+            if nr_incercari>=3:
+                logger.critical(f"Posibil atac: 3 logari esuate de la adresa {ip}") #critical 1
+                
+                subiect="Logari suspecte"
+                mesaj_text=f"Utilizatorul {user_incercat} a incercat sa se logheze de pe ip-ul {ip} de prea multe ori în mai puțin de 2 minute."
+                mesaj_html=f"""
+                    <h1 style="color: red">{subiect}</h1>
+                    <p>Username incercat: {user_incercat}</p>
+                    <p>IP suspect: {ip}</p>
+                    <p>Numar de incercari: {nr_incercari}</p>
+                """
+                mail_admins(
+                    subject=subiect,
+                    message=mesaj_text,
+                    html_message=mesaj_html
+                )
     else:
         form=CustomAuthenticationForm()
     return render(request, 'aplicatie_masini/login.html', {
@@ -592,6 +661,7 @@ def confirmare_succes(request, cod_confirmare):
         user.save()
         messages.success(request, "Contul a fost confirmat cu succes!")
     except CustomUser.DoesNotExist:
+        logger.error(f"Incercare confirmare cu cod invalid: {cod_confirmare}") #error 2
         messages.error(request, "Link-ul de confirmare este invalid sau a fost deja folosit.")
     except Exception as e:
         messages.error(request, "A apărut o eroare la confirmarea contului.")
