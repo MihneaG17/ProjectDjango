@@ -39,7 +39,14 @@
                     </li>
                     <li> <a href="{% url 'contact'%}">Contact</a></li>
                     <li> <a href="{% url 'cos_virtual'%}">Cos</a></li>
+                    {% if perms.aplicatie_masini.add_masina %}
+                        <li> <a href="{% url 'adauga-produse' %}">Adaugă produse</a></li>
+                    {% endif %}
 
+                    {% if perms.aplicatie_masini.vizualizare_zona_admin %}
+                        <li> <a href="{% url 'info' %}">Info</a></li>
+                        <li> <a href="{% url 'log' %}">Log</a></li>
+                    {% endif %}
                     <li>
                         <a href="#">
                             Cont {% if user.is_authenticated %}({{ user.username }}){% endif %}

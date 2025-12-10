@@ -1,0 +1,24 @@
+{% extends 'aplicatie_masini/baza.html' %}
+
+{% block title %}
+Eroare 403
+{% endblock %}
+
+{% block main %}
+    <div class="container-eroare">
+        <h1> {{titlu|default:"Eroare 403"}} </h1>
+        <hr>
+        {% if user.is_authenticated %}
+            <h3> Salut {{ user.username }} </h3>
+        {% else %}
+            <h3> Salut preastimate anonim </h3>
+        {% endif %}
+
+        <p> {{ mesaj_personalizat }} </p>
+        <p>Număr accesări interzise în această sesiune: {{ nr_accesari }}</p>
+
+        {% if flag_rosu %}
+            <p class="eroare-danger"> {{ mesaj_atentionare }} </p>
+        {% endif %}
+    </div>
+{% endblock %}

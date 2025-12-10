@@ -64,15 +64,40 @@ class AccesoriuAdmin(admin.ModelAdmin):
     search_fields=('nume_accesoriu', 'pret_accesoriu')
     list_display = ('nume_accesoriu','pret_accesoriu')
 
-class CustomUserAdmin(admin.ModelAdmin):
+class CustomUserAdmin(UserAdmin):
+    list_display=('username', 'email', 'first_name', 'last_name', 'is_staff', 'email_confirmat', 'blocat')
     fieldsets= (
-        ('Informatii Generale', {
-            'fields': ('username', 'email', 'first_name', 'last_name')
+        ('Cont', {
+            'fields': ('username', 'password')
         }),
-        ('Informatii Specifice', {
-            'fields': ('telefon', 'tara','judet', 'oras', 'strada', 'cod_postal', 'cod', 'email_confirmat') 
+        ('Informatii personale', {
+            'fields': ('first_name', 'last_name','email') 
+        }),
+        ('Informatii specifice', {
+            'fields': ('telefon', 'oras', 'strada', 'cod_postal', 'cod', 'email_confirmat', 'blocat')
+        }),
+        ('Permisiuni', {
+            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
         }),
     )
+    
+    def get_readonly_fields(self, request, obj = None):
+        readonly_fields=super().get_readonly_fields(request, obj)
+
+        if request.user.is_superuser:
+            return readonly_fields
+        if request.user.has_perm('aplicatie_masini.blocheaza_utilizator'):
+            campuri_permise=['first_name', 'last_name', 'email', 'blocat']
+            toate_campurile=[]
+            for camp in self.model._meta.get_fields():
+                toate_campurile.append(camp.name)
+            campuri_de_blocat=[]
+            for nume in toate_campurile:
+                if nume not in campuri_permise:
+                    campuri_de_blocat.append(nume)
+            return campuri_de_blocat
+        return readonly_fields
+    
 admin.site.register(Locatie, LocatieAdmin)
 admin.site.register(Marca, MarcaAdmin)
 admin.site.register(Masina, MasinaAdmin)

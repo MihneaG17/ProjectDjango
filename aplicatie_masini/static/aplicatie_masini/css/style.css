@@ -571,6 +571,13 @@ footer {
     box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
 }
 
+.field-errors {
+    padding-top: 10px;
+    color: red;
+}
+.contact-help-text {
+    color: gray;
+}
 .alert-success {
     background-color: #d4edda;
     color: #155724;
@@ -832,6 +839,71 @@ footer {
     background-color: #bdc3c7;
     color: white;
 }
+
+/* Eroare 403 */
+.container-eroare {
+    padding: 50px;
+    text-align: center;
+}
+
+.eroare-danger {
+    color: red;
+    font-weight: bold;
+    border: 1px solid red;
+    padding: 10px;
+}
+
+/*Banner oferta produse*/
+.banner-inline {
+    display: none;
+    margin: 20px 0;          
+    width: 100%;             
+    background: linear-gradient(90deg, #d63031, #e17055);
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    text-align: center;      
+    box-sizing: border-box;  
+    animation: expandIn 0.5s ease-out;
+}
+
+.continut-banner {
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+    gap: 15px;
+    position: relative;
+}
+
+.banner-iconita {
+    font-size: 1.5rem;
+}
+
+.text-oferta {
+    display: flex; 
+    flex-direction: column; 
+    align-items: flex-start;
+}
+
+.btn-inchide-oferta {
+    background: none; 
+    border: none; 
+    color: white;
+    font-size: 1.5rem; 
+    cursor: pointer; 
+    opacity: 0.8;
+    margin-left: 20px;
+}
+
+.btn-inchide-oferta:hover {
+    opacity: 1;
+}
+
+@keyframes expandIn {
+            from { transform: scaleY(0); opacity: 0; height: 0; }
+            to { transform: scaleY(1); opacity: 1; height: auto; }
+        }
 
 @media (max-width: 800px) {
     .container-detalii {

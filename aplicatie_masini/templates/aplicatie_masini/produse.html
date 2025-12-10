@@ -103,6 +103,42 @@
     {% if eroare %}
         <p class="div-eroare">{{eroare}}</p>
     {% endif %}
+
+    {% if user.is_authenticated %}
+        <div id="banner-promotie" class="banner-inline">
+            <a href="{% url 'oferta' %}?sursa=banner" style="text-decoration: none; color: white;">
+                <div class="continut-banner">
+                    <span class="banner-iconita">🔥</span>
+                    <div class="text-oferta">
+                        <strong> OFERTĂ SPECIALĂ PENTRU TINE </strong>
+                        <span class="detalii-oferta">50% Reducere la comisionul de procesare!</span>
+                    </div>
+                    <button onclick="inchideBanner(event)" class="btn-inchide-oferta">x</button>
+                </div>
+            </a>
+        </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var sansa=Math.random();
+                if (sansa < 0.3) {
+                    var banner=document.getElementById("banner-promotie");
+                    setTimeout(function() {
+                        if(banner) banner.style.display = "block";
+                    }, 300);
+                }
+            });
+            function inchideBanner(event) {
+                if (event) {
+                    event.preventDefault(); 
+                    event.stopPropagation();
+                }
+                var banner=document.getElementById("banner-promotie");
+                if(banner) banner.style.display="none";
+            }
+        </script>
+    {% endif %}
+
     <div class="lista-produse">
         {% for masina in pagina.object_list %}
             <div class="masina-card">

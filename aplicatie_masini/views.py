@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
+from django.contrib.auth.models import Permission
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib import messages
 from django.conf import settings
@@ -8,6 +9,7 @@ from django.core.mail import send_mail, mail_admins
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.urls import reverse
+from django.http import HttpResponseForbidden
 from django.template.loader import render_to_string
 from datetime import date, datetime, timedelta
 import locale
@@ -16,16 +18,38 @@ import os
 import time
 from . import middleware
 from .models import Locatie, Masina, Marca, CategorieMasina, Serviciu, Accesoriu, CustomUser, IncercareLogare
-from .forms import MasinaFilterForm, ContactForm, CustomUserCreationForm, CustomAuthenticationForm
+from .forms import MasinaFilterForm, ContactForm, CustomUserCreationForm, CustomAuthenticationForm, FormularAdaugareProdus
 import logging
 locale.setlocale(locale.LC_TIME, 'romanian')
 
 # Create your views here.
 from django.http import HttpResponse
 
+#to-do - lab5 documentatie
 logger=logging.getLogger('django')
 
 def info(request):
+    categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
+    if not request.user.groups.filter(name='Administratori_site').exists():
+        nr_accesari=request.session.get('contor_403',0)
+        nr_accesari+=1
+        request.session['contor_403']=nr_accesari
+        flag_rosu=False
+        mesaj_atentionare=""
+        
+        if nr_accesari>settings.N_MAX_403:
+            flag_rosu=True
+            mesaj_atentionare=f"Ai incercat sa accesezi resurse interzise de {nr_accesari}"
+        return HttpResponseForbidden(render(request, 'aplicatie_masini/eroare403.html', {
+            'titlu': 'Eroare accesare pagină info',
+            'mesaj_personalizat': 'Nu ai voie să accesezi această pagină',
+            'mesaj_atentionare': mesaj_atentionare,
+            'nr_accesari': nr_accesari,
+            'flag_rosu': flag_rosu,
+            'toate_categoriile': categorii_meniu,
+            'ip_client': request.META.get('REMOTE_ADDR',''),
+        }))
+        
     keys = list(request.GET.keys())
     count = len(keys)
     if count > 0:
@@ -42,7 +66,11 @@ def info(request):
                         <p>{afis_data(data_param)}</p>
                         {param_section}
                     """
-    return render(request, 'aplicatie_masini/info.html', {'continut_info': continut_info} )
+    return render(request, 'aplicatie_masini/info.html', {
+        'continut_info': continut_info,
+        'toate_categoriile': categorii_meniu,
+        'ip_client': request.META.get('REMOTE_ADDR',''),
+        } )
 
 def afis_data(data):
     if(not data):
@@ -133,6 +161,26 @@ def afis_template(request):
 
 #functie pentru log-uri
 def afis_log(request):
+    categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
+    if not request.user.groups.filter(name='Administratori_site').exists():
+        nr_accesari=request.session.get('contor_403',0)
+        nr_accesari+=1
+        request.session['contor_403']=nr_accesari
+        flag_rosu=False
+        mesaj_atentionare=""
+        
+        if nr_accesari>settings.N_MAX_403:
+            flag_rosu=True
+            mesaj_atentionare=f"Ai incercat sa accesezi resurse interzise de {nr_accesari}"
+        return HttpResponseForbidden(render(request, 'aplicatie_masini/eroare403.html', {
+            'titlu': 'Eroare accesare pagină log',
+            'mesaj_personalizat': 'Nu ai voie să accesezi această pagină',
+            'mesaj_atentionare': mesaj_atentionare,
+            'nr_accesari': nr_accesari,
+            'flag_rosu': flag_rosu,
+            'toate_categoriile': categorii_meniu,
+            'ip_client': request.META.get('REMOTE_ADDR',''),
+        }))
     
     html = []
     
@@ -272,7 +320,11 @@ def afis_log(request):
         html.append("<p>Pagina/paginile cu cele mai multe accesari: " + ", ".join(pagini_max)+f"({max_cnt} accesari)</p>")
         html.append("<p>Pagina/paginile cu cele mai putine accesari: " + ", ".join(pagini_min)+f"({min_cnt} accesari)</p>")
     continut_log = "".join(html)
-    return render(request, 'aplicatie_masini/log.html', {'continut_log': continut_log})       
+    return render(request, 'aplicatie_masini/log.html', {
+        'continut_log': continut_log,
+        'toate_categoriile': categorii_meniu,
+        'ip_client': request.META.get('REMOTE_ADDR',''),
+        })       
 
 
 #view-uri pentru template rendering
@@ -537,7 +589,12 @@ def inregistrare(request):
             #cale_relativa=f"/aplicatie_masini/confirmare-succes/{user.cod}"
             cale_relativa = reverse("confirmare-succes", args=[user.cod])
             link_complet=request.build_absolute_uri(cale_relativa)
-            
+            """
+            current_site=Site.objects.get_current()
+            domeniu=current_site.domain
+            cale_logo=settings.STATIC_URL + "aplicatie_masini/imagini/logo-site.png"
+            url_logo=f"http://{domeniu}{cale_logo}"
+            """
             cale_logo=settings.STATIC_URL + "aplicatie_masini/imagini/logo-site.png"
             url_logo=request.build_absolute_uri(cale_logo)
             
@@ -578,6 +635,10 @@ def login_view(request):
         form=CustomAuthenticationForm(data=request.POST, request=request)
         if form.is_valid():
             user=form.get_user()
+            
+            if user.blocat:
+                messages.error(request, "Contul tău a fost blocat. Contactează un administrator.")
+                return redirect('login')
             
             if user.email_confirmat:
                 login(request, user)
@@ -625,6 +686,12 @@ def login_view(request):
     })
 
 def logout_view(request):
+    if request.user.is_authenticated:
+        try:
+            permisiune=Permission.objects.get(codename="vizualizare_oferta")
+            request.user.user_permissions.remove(permisiune)
+        except Permission.DoesNotExist:
+            pass
     logout(request)
     return redirect('index')
 
@@ -669,4 +736,107 @@ def confirmare_succes(request, cod_confirmare):
         'toate_categoriile': categorii_meniu,
         'ip_client': request.META.get('REMOTE_ADDR',''),
     })
+
+def adauga_produse(request):
+    categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
+    if not request.user.has_perm('aplicatie_masini.add_masina'):
+        nr_accesari=request.session.get('contor_403',0)
+        nr_accesari+=1
+        request.session['contor_403']=nr_accesari
+        flag_rosu=False
+        mesaj_atentionare=""
+        
+        if nr_accesari>settings.N_MAX_403:
+            flag_rosu=True
+            mesaj_atentionare=f"Ai incercat sa accesezi resurse interzise de {nr_accesari}"
+        return HttpResponseForbidden(render(request, 'aplicatie_masini/eroare403.html', {
+            'titlu': 'Eroare adăugare produse',
+            'mesaj_personalizat': 'Nu ai voie să adaugi mașini',
+            'mesaj_atentionare': mesaj_atentionare,
+            'nr_accesari': nr_accesari,
+            'flag_rosu': flag_rosu,
+            'toate_categoriile': categorii_meniu,
+            'ip_client': request.META.get('REMOTE_ADDR',''),
+        }))
+
+    if request.method=="POST":
+        form=FormularAdaugareProdus(request.POST, request.FILES) 
+        if form.is_valid():
+            pret_initial=form.cleaned_data['pret_achizitie']
+            procent=form.cleaned_data['procent_adaos']
+            
+            produs=form.save(commit=False)
+            pret=pret_initial + (procent*pret_initial)/100
+            produs.pret_masina=pret
+            
+            produs.save()
+            form.save_m2m()
+            
+            messages.success(request, "Produsul a fost adăugat cu succes în baza de date")
+            return redirect('adauga-produse')
+    else:
+        form=FormularAdaugareProdus()
+        
+    return render(request, 'aplicatie_masini/adauga-produse.html', {
+        'toate_categoriile': categorii_meniu,
+        'form': form,
+        'ip_client': request.META.get('REMOTE_ADDR',''),
+    })
+
+def eroare403(request):
+    categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
     
+    nr_accesari=request.session.get('contor_403',0)
+    nr_accesari+=1
+    request.session['contor_403']=nr_accesari
+    flag_rosu=False
+    mesaj_atentionare=""
+    
+    if nr_accesari>settings.N_MAX_403:
+        flag_rosu=True
+        mesaj_atentionare=f"Ai incercat sa accesezi resurse interzise de {nr_accesari}"
+    
+    titlu=""
+    mesaj_personalizat="Ai încercat să accesezi o resursă interzisăs"
+    return render(request, 'aplicatie_masini/eroare403.html', {
+        'toate_categoriile': categorii_meniu,
+        'titlu': titlu,
+        'mesaj_personalizat': mesaj_personalizat,
+        'mesaj_atentionare': mesaj_atentionare,
+        'nr_accesari': nr_accesari,
+        'flag_rosu': flag_rosu,
+        'ip_client': request.META.get('REMOTE_ADDR',''),
+    })
+
+def pagina_oferta(request):
+    categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
+    if request.user.is_authenticated and request.GET.get('sursa')=="banner":
+        try:
+            permisiune=Permission.objects.get(codename="vizualizare_oferta")
+            request.user.user_permissions.add(permisiune)
+        except Permission.DoesNotExist:
+            pass
+        
+    if not request.user.has_perm('aplicatie_masini.vizualizare_oferta'):
+        nr_accesari=request.session.get('contor_403',0)
+        nr_accesari+=1
+        request.session['contor_403']=nr_accesari
+        flag_rosu=False
+        mesaj_atentionare=""
+        
+        if nr_accesari>settings.N_MAX_403:
+            flag_rosu=True
+            mesaj_atentionare=f"Ai incercat sa accesezi resurse interzise de {nr_accesari}"
+        return HttpResponseForbidden(render(request, 'aplicatie_masini/eroare403.html', {
+            'titlu': 'Eroare afișare ofertă',
+            'mesaj_personalizat': 'Nu ai voie să vizualizezi oferta',
+            'mesaj_atentionare': mesaj_atentionare,
+            'nr_accesari': nr_accesari,
+            'flag_rosu': flag_rosu,
+            'toate_categoriile': categorii_meniu,
+            'ip_client': request.META.get('REMOTE_ADDR',''),
+        }))
+    return render(request, 'aplicatie_masini/pagina-oferta.html', {
+        'toate_categoriile': categorii_meniu,
+        'ip_client': request.META.get('REMOTE_ADDR',''),
+    })

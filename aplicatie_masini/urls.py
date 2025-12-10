@@ -17,5 +17,8 @@ urlpatterns = [
 	path("profil", views.profil_view, name="profil"),
 	path("change-password", views.change_password_view, name="change-password"),
 	path("confirma-mail/<str:cod_confirmare>/", views.confirmare_succes, name="confirmare-succes"),
+	path("interzis", views.eroare403, name="interzis"),
+	path("adauga-produse", views.adauga_produse, name="adauga-produse"),
+	path("oferta", views.pagina_oferta, name="oferta"),
  	path("locatii", views.afis_produse, name="locatii"),
 ]

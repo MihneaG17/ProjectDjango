@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import Marca, CategorieMasina, Masina, CustomUser
 from django.core.mail import mail_admins
-import datetime
+from datetime import datetime
 import re
 
 class MasinaFilterForm(forms.Form):
@@ -326,4 +326,106 @@ class CustomAuthenticationForm(AuthenticationForm):
     def clean(self):
         cleaned_data=super().clean()
         ramane_logat=self.cleaned_data.get('ramane_logat')
+        return cleaned_data
+
+#formular de adaugare produse
+def validare_val_pozitiva(valoare):
+    if valoare and valoare<0:
+        raise forms.ValidationError("Valoarea nu poate fi negativă")
+    
+def validare_maxim_100(valoare):
+    if valoare and valoare>100:
+        raise forms.ValidationError("Procentul nu poate depăsi 100%")
+    
+class FormularAdaugareProdus(forms.ModelForm):
+    pret_achizitie=forms.DecimalField(label="Pret achizitie (EUR)", validators=[validare_val_pozitiva], error_messages={
+        'required': 'Trebuie să știm cu cât ai cumpărat mașina.',
+        'invalid': 'Introdu o sumă corectă (fără litere).'
+    })
+    procent_adaos=forms.IntegerField(label="Adaos comercial (Procent)", validators=[validare_val_pozitiva, validare_maxim_100], error_messages={
+        'required': 'Introdu procentul de adaos.',
+        'invalid': 'Introdu un procent corect (fără litere).'
+    }, help_text='Introduceți un procent între 0 și 100') #validators mai intai verifica daca val e pozitiva, iar daca e, verifica daca e mai mare decat 100
+    
+    class Meta:
+        model=Masina
+        fields=("marca", "categorie", "model", "an_fabricatie", "kilometraj", "tip_combustibil", "servicii", "accesorii", "imagine" ) 
+        labels= {
+            'an_fabricatie': 'Anul de fabricație',
+            'tip_combustibil': 'Tipul de combustibil',
+            'imagine': 'Poza de prezentare',
+        }
+        error_messages= {
+            'marca': {
+                'required': 'Te rugăm să selectezi o marcă din listă.',
+                'invalid': 'Marca selectată nu este validă.'
+            },
+            'categorie': {
+                'required': 'Te rugăm să selectezi o categorie din listă',
+                'invalid': 'Categoria selectată nu este validă.'
+            },
+            'model': {
+                'required': 'Este obligatoriu să introduci modelul mașinii.',
+                'max_length': 'Numele modelului este prea lung (maxim 100 caractere).'
+            },
+            'an_fabricatie': {
+                'required': 'Nu uita să treci anul fabricației.',
+                'invalid': 'Te rugăm să introduci un an valid (număr).'
+            },
+            'kilometraj': {
+                'required': 'Te rugăm să introduci kilometrajul.',
+                'invalid': 'Te rugăm să introduci un număr valid.'
+            },
+            'tip_combustibil': {
+                'required': 'Te rugăm să selectezi un tip de combustibil din listă.',
+                'invalid': 'Valoarea selectată nu este validă'
+            },
+            'imagine': {
+                'required': 'Te rugăm să încarci o imagine reprezentativă.',
+                'invalid': 'Fișierul încărcat nu este o imagine validă.',
+            }
+        }
+        help_texts={
+            'servicii': 'Ține apăsată tasta CTRL pentru a selecta mai multe servicii',
+            'accesorii': 'Selectează toate accesoriile cu care vine mașina',
+            'imagine': 'Încărcați fișiere de tip jpg sau png',
+            'an_fabricatie': 'Încărcați doar anul, în format YYYY (ex: 2024)',
+        }
+    
+    #anul de fabricatie sa nu fie din viitor
+    def clean_an_fabricatie(self):
+        an_fabricatie=self.cleaned_data.get('an_fabricatie')
+        an_curent=datetime.now().year
+        
+        if an_fabricatie>an_curent:
+            raise forms.ValidationError("Nu poți adăuga o mașină din viitor. Anul de fabricație trebuie să fie mai mic decât anul curent")
+        return an_fabricatie
+    
+    #in numele modelului sa nu se gaseasca simboluri dubioase
+    def clean_model(self):
+        model=self.cleaned_data.get('model')
+        if model:
+            simboluri_interzise=['@','#','$','%','^','&','!','?','<','>']
+            for caracter in model:
+                if caracter in simboluri_interzise:
+                    raise forms.ValidationError(f"Numele modelului nu poate conține simbolul {caracter}")
+        return model
+    
+    #kilometrajul sa fie pozitiv
+    def clean_kilometraj(self):
+        kilometraj=self.cleaned_data.get('kilometraj')
+        
+        if kilometraj and kilometraj<0:
+            raise forms.ValidationError("Kilometrajul nu poate fi un număr negativ")
+        return kilometraj
+    
+    #pretul nu poate fi mic daca anul fabricatiei este foarte recent
+    def clean(self):
+        cleaned_data=super().clean()
+        pret=cleaned_data.get('pret_achizitie')
+        an_fabricatie=cleaned_data.get('an_fabricatie')
+        
+        if pret is not None and an_fabricatie is not None:
+            if an_fabricatie>=2022 and pret<500:
+                raise forms.ValidationError("O mașină fabricată în ultimii ani nu poate avea un preț atât de mic.")
         return cleaned_data

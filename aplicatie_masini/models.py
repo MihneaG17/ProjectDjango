@@ -87,6 +87,14 @@ class CustomUser(AbstractUser):
     cod=models.CharField(max_length=100, blank=True, null=True)
     email_confirmat=models.BooleanField(default=False)
     
+    blocat=models.BooleanField(default=False)
+    
+    class Meta:
+        permissions=[
+            ("vizualizare_zona_admin", "Poate vedea log-uri si info server"),
+            ("vizualizare_oferta", "Poate vizualiza pagina cu oferte"),
+            ("blocheaza_utilizator", "Poate bloca/debloca utilizatori"),
+            ]
     
     def __str__(self):
         return self.username
