@@ -1,0 +1,14 @@
+{
+    "nume": "Dobrin",
+    "prenume": "Mihnea",
+    "cnp": "5051117394436",
+    "email": "mihnea298@gmail.com",
+    "tip_mesaj": "reclamatie",
+    "subiect": "Mesaj de test iar",
+    "minim_zile_asteptare": 6,
+    "mesaj": "Salut! Asta e inca un mesaj de test sa verific eu ceva. Dobrin",
+    "varsta_formatata": "20 si 0 luni",
+    "urgent": false,
+    "ip_adresa": "127.0.0.1",
+    "data_ora_primire": "2025-12-13 17:10:46"
+}

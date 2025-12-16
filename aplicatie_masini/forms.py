@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import Marca, CategorieMasina, Masina, CustomUser
 from django.core.mail import mail_admins
-from datetime import datetime
+from datetime import datetime, date
 import re
 
 class MasinaFilterForm(forms.Form):
@@ -54,7 +54,7 @@ class MasinaFilterForm(forms.Form):
         return cleaned_data
 
 def validare_varsta(value):
-    today=datetime.date.today()
+    today=date.today()
     varsta=today.year-value.year
     zi_nastere_trecuta=False
     if today.month>value.month:
@@ -108,7 +108,7 @@ def validare_cnp_corect(value):
             an_str=an_prefix+value[1:3]
             luna_str=value[3:5]
             zi_str=value[5:7]
-            datetime.date(year=int(an_str), month=int(luna_str), day=int(zi_str))
+            date(year=int(an_str), month=int(luna_str), day=int(zi_str))
         except ValueError:
             raise forms.ValidationError("Data nasterii din CNP nu este valida")
 
@@ -168,7 +168,7 @@ class ContactForm(forms.Form):
         
         data_nasterii=cleaned_data.get("data_nasterii")
         if data_nasterii:
-            today=datetime.date.today()
+            today=date.today()
             ani_persoana=today.year-data_nasterii.year
             luni_persoana=today.month-data_nasterii.month
             if (today.month, today.day)<(data_nasterii.month, data_nasterii.day):

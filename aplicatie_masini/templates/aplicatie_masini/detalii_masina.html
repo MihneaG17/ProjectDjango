@@ -15,7 +15,15 @@
             <a href="{% url 'produse' %}">Inapoi la lista de produse</a>
         </div>
     {% else %}
-
+    
+    {% if messages %}
+        {% for mesaj in messages %}
+            <div class="alert alert-{{ mesaj.tags }}">
+                {{ mesaj }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
     <div class="container-detalii">
         <div class="detalii-imagine">
             {% if masina.imagine %}

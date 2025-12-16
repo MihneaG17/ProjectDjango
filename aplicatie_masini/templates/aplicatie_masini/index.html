@@ -4,6 +4,13 @@
 {% block title %} Acasa {% endblock %}
 
 {% block main %}
+    {% if messages %}
+        {% for mesaj in messages %}
+            <div class="alert alert-{{ mesaj.tags }}">
+                {{ mesaj }}
+            </div>
+        {% endfor %}
+    {% endif %}
     <section id="prezentare" class="hero">
         <img src = "{% static 'aplicatie_masini/imagini/banner.jpg' %}" alt="banner" class="hero-img">
         <h2> {{ banner_text }} </h2>

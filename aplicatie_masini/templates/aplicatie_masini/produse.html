@@ -21,6 +21,13 @@
     {% endif %}
 
     <div class="container-filtre"> 
+        {% if messages %}
+            {% for mesaj in messages %}
+                <div class="alert alert-{{ mesaj.tags }}">
+                    {{ mesaj }}
+                </div>
+            {% endfor %}
+        {% endif %}
         <form method="GET" action="" class="filter-form">
             {% if categorie_curenta and form.categorie.errors %}
                 <div class="form-error-general">

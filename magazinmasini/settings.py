@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from django.contrib.messages import constants as message_constants
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -38,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sitemaps',
     'aplicatie_masini.apps.AplicatiemasiniConfig',
 ]
 
@@ -215,3 +217,27 @@ LOGGING = {
 }
 
 N_MAX_403=5
+
+
+MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+
+MESSAGE_TAGS = {
+    message_constants.DEBUG: 'debug',
+    message_constants.INFO: 'info',
+    message_constants.SUCCESS: 'success',
+    message_constants.WARNING: 'warning',
+    message_constants.ERROR: 'error',
+}
+#MESSAGE_LEVEL=10 - pt a fi vizibile si mesajele de debug pe pagina
+
+#Variabile pentru task-uri automate
+K_TIMP_STERGERE=2
+
+Z_SAPTAMANA='miercuri' 
+O_ORA='12:00' 
+X_MINUTE=10
+
+M=60
+
+Z2='vineri'
+O2='18:00'

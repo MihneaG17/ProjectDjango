@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.urls import reverse
 import uuid
 
 # Create your models here.
@@ -75,6 +76,10 @@ class Masina(models.Model):
     
     def __str__(self):
         return f"{self.marca.nume_marca} {self.model} ({self.an_fabricatie})"
+    
+    def get_absolute_url(self):
+        return reverse("detalii_masina", kwargs={"id": self.pk})
+    
 
 class CustomUser(AbstractUser):
     telefon=models.CharField(max_length=20, blank=True)

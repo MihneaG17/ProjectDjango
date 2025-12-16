@@ -1,9 +1,35 @@
 {% extends 'aplicatie_masini/baza.html' %}
 
-{% block title %}
-    Ofertă
-{% endblock %}
+{% block title %}Oferta Speciala Deblocata{% endblock %}
 
 {% block main %}
-    <p>Salut</p>
+    <div class="offer-wrapper">
+        <div class="offer-content">
+            <div class="offer-icon-gift">
+                <i class="fa-solid fa-gift"></i>
+            </div>
+
+            <h1 class="offer-title">Felicitări!</h1>
+            <p class="offer-subtitle">Ai deblocat o ofertă specială!</p>
+
+            <div class="discount-big">-50%</div>
+            <div class="discount-desc">Reducere la comisionul de procesare</div>
+
+            <div class="offer-code-box">
+                <span class="offer-code-label">CODUL TĂU:</span>
+                <span class="offer-code-text">SECRET-VIP-2025</span>
+            </div>
+
+            <br>
+
+            <a href="{% url 'produse' %}" class="offer-btn-claim">
+                Vezi mașinile
+            </a>
+
+            <p class="offer-p">
+                *Oferta valabilă 24h. Nu se cumulează cu alte reduceri.
+            </p>
+
+        </div>
+    </div>
 {% endblock %}

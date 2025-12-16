@@ -87,16 +87,23 @@ class CustomUserAdmin(UserAdmin):
         if request.user.is_superuser:
             return readonly_fields
         if request.user.has_perm('aplicatie_masini.blocheaza_utilizator'):
-            campuri_permise=['first_name', 'last_name', 'email', 'blocat']
-            toate_campurile=[]
-            for camp in self.model._meta.get_fields():
-                toate_campurile.append(camp.name)
-            campuri_de_blocat=[]
-            for nume in toate_campurile:
-                if nume not in campuri_permise:
-                    campuri_de_blocat.append(nume)
-            return campuri_de_blocat
-        return readonly_fields
+            return (
+                'username', 
+                'password',
+                'is_superuser', 
+                'is_staff', 
+                'is_active',
+                'groups', 
+                'user_permissions',
+                'last_login', 
+                'date_joined',
+
+                'telefon',
+                'oras',
+                'strada',
+                'cod_postal',
+                'cod',
+                'email_confirmat', )
     
 admin.site.register(Locatie, LocatieAdmin)
 admin.site.register(Marca, MarcaAdmin)
@@ -106,3 +113,21 @@ admin.site.register(Serviciu, ServiciuAdmin)
 admin.site.register(Accesoriu, AccesoriuAdmin)
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(IncercareLogare)
+
+
+"""
+def get_readonly_fields(self, request, obj = None):
+        readonly_fields=super().get_readonly_fields(request, obj)
+
+        if request.user.is_superuser:
+            return readonly_fields
+        if request.user.has_perm('aplicatie_masini.blocheaza_utilizator'):
+            campuri_permise=['first_name', 'last_name', 'email', 'blocat']
+            toate_campurile_afisate=self.get_fields(request,obj)
+            campuri_de_blocat=[]
+            for nume in toate_campurile_afisate:
+                if nume not in campuri_permise:
+                    campuri_de_blocat.append(nume)
+            return campuri_de_blocat
+        return readonly_fields
+"""

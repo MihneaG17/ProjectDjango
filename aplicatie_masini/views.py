@@ -375,6 +375,7 @@ def afis_produse(request):
 
 def produse(request, nume_categorie=None): 
     logger.debug(f"Accesare pagina de produse. Parametrii GET {request.GET}") #debug 1- pentru a vedea parametrii get (filtrele) aplicate
+    messages.debug(request, f"Filtre aplicate: {request.GET.urlencode()}") #mesaj debug 1
     
     param_sortare=request.GET.get("sort")
     nrPagina=request.GET.get("pagina")
@@ -490,6 +491,7 @@ def detalii_masina(request, id):
     categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
     try:
         masina = Masina.objects.get(pk=id)
+        messages.debug(request, f"Vizualizare obiect Masina ID={id} - {masina.model}") #mesaj debug 2
         return render(request, 'aplicatie_masini/detalii_masina.html', 
             {
             'masina': masina,
@@ -559,7 +561,7 @@ def contact(request):
                     message=mesaj_text,
                     html_message=mesaj_html
                 )
-                messages.error(request, "Ne pare rău, a apărut o eroare tehnică și mesajul nu a putut fi salvat. Administratorii au fost notificați.")
+                messages.error(request, "Ne pare rău, a apărut o eroare tehnică și mesajul nu a putut fi trimis. Administratorii au fost notificați.") #mesaj eroare 1
                 
                 return render(request, 'aplicatie_masini/contact.html', {
                     "form": form,
@@ -567,6 +569,7 @@ def contact(request):
                 })
         else:
             logger.warning(f"Formular de contact invalid. Erori: {form.errors}") #warning 2
+            messages.warning(request, "Formularul conține erori. Verifică datele introduse.") #mesaj warning 2
     else:
         form=ContactForm()
     return render(request, 'aplicatie_masini/contact.html', {
@@ -637,7 +640,7 @@ def login_view(request):
             user=form.get_user()
             
             if user.blocat:
-                messages.error(request, "Contul tău a fost blocat. Contactează un administrator.")
+                messages.error(request, "Contul tău a fost blocat. Contactează un administrator.") #mesaj eroare 2
                 return redirect('login')
             
             if user.email_confirmat:
@@ -653,7 +656,8 @@ def login_view(request):
             else:
                 logger.warning(f"Tentativa de login cu email neconfirmat: {user.username}") #warning 1
                 
-                messages.error(request, "Te rugăm să îți confirmi adresa de mail pentru a te putea loga.")
+                messages.warning(request, "Contul există, dar trebuie să îți confirmi adresa de email pentru a te putea loga") #mesaj warning 1
+                #messages.error(request, "Te rugăm să îți confirmi adresa de mail pentru a te putea loga.")
         else:
             ip=request.META.get('REMOTE_ADDR')
             user_incercat=request.POST.get('username')
@@ -693,6 +697,7 @@ def logout_view(request):
         except Permission.DoesNotExist:
             pass
     logout(request)
+    messages.info(request, "Te-ai delogat cu succes! Te mai așteptăm!") #mesaj info 1
     return redirect('index')
 
 def profil_view(request):
@@ -708,7 +713,7 @@ def change_password_view(request):
         if form.is_valid():
             form.save()
             update_session_auth_hash(request, request.user)
-            messages.success(request, 'Parola a fost actualizata')
+            messages.success(request, 'Parola a fost actualizata') #mesaj succes 2
             return redirect('index')
         else:
             messages.error(request, 'Exista erori')
@@ -772,7 +777,7 @@ def adauga_produse(request):
             produs.save()
             form.save_m2m()
             
-            messages.success(request, "Produsul a fost adăugat cu succes în baza de date")
+            messages.success(request, "Produsul a fost adăugat cu succes în baza de date") #mesaj succes 1
             return redirect('adauga-produse')
     else:
         form=FormularAdaugareProdus()
@@ -814,9 +819,9 @@ def pagina_oferta(request):
         try:
             permisiune=Permission.objects.get(codename="vizualizare_oferta")
             request.user.user_permissions.add(permisiune)
+            messages.info(request, "Felicitări! Ai deblocat oferta specială prin accesarea bannerului.") #mesaj info 2 
         except Permission.DoesNotExist:
             pass
-        
     if not request.user.has_perm('aplicatie_masini.vizualizare_oferta'):
         nr_accesari=request.session.get('contor_403',0)
         nr_accesari+=1

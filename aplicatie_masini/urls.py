@@ -1,5 +1,25 @@
 from django.urls import path
 from . import views
+from django.contrib.sitemaps import GenericSitemap
+from django.contrib.sitemaps.views import sitemap
+from .sitemaps import StaticViewSitemap
+from .models import Masina
+
+info_masini= {
+	'queryset': Masina.objects.all(),
+	'date_field': 'data_adaugarii',
+}
+
+sitemap_masini= GenericSitemap(
+	info_masini,
+	priority=0.8,
+	changefreq="monthly",
+)
+
+sitemaps= {
+	'static': StaticViewSitemap,
+	'masini': sitemap_masini,
+}
 urlpatterns = [
 	path("", views.index, name="index"),
 	path("info", views.info, name="info"),
@@ -20,5 +40,6 @@ urlpatterns = [
 	path("interzis", views.eroare403, name="interzis"),
 	path("adauga-produse", views.adauga_produse, name="adauga-produse"),
 	path("oferta", views.pagina_oferta, name="oferta"),
+	path("sitemap.xml", sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
  	path("locatii", views.afis_produse, name="locatii"),
 ]
