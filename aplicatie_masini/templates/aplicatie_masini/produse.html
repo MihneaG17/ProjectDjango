@@ -149,6 +149,15 @@
     <div class="lista-produse">
         {% for masina in pagina.object_list %}
             <div class="masina-card">
+                <a href="{% url 'detalii_masina' masina.id %}" class="card-img-link">
+                    {% if masina.imagine %}
+                        <img src="{{ masina.imagine.url }}" alt="{{ masina.marca.nume_marca }} {{ masina.model }}" class="card-img">
+                    {% else %}
+                        <div class="card-img-placeholder">
+                            <i class="fas fa-car-side"></i> Fără imagine
+                        </div>
+                    {% endif %}
+                </a>
                 <div class="card-content">
                     <h3> <a href = "{% url 'detalii_masina' masina.id %}"> {{ masina.marca.nume_marca }} {{ masina.model }} {{masina.an_fabricatie}} </a></h3>
                     <p>

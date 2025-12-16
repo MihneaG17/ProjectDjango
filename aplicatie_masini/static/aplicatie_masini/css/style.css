@@ -322,9 +322,44 @@ footer {
     border: 1px solid #9f9f9f;
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    padding: 24px;
+    /*padding: 24px;*/
+    padding: 0;
+    overflow: hidden;
+    flex-direction: column;
     transition: all 0.3 ease-in-out;
 }
+
+.card-img {
+    width: 100%;
+    height: 200px; 
+    object-fit: cover; 
+    display: block;
+    border-bottom: 1px solid #eee;
+}
+
+.card-img-placeholder {
+    width: 100%;
+    height: 200px;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    font-size: 1.1rem;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.card-img-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.card-content {
+    padding: 20px;
+}
+
 .card-content a {
     text-decoration: none;
     color: #333;
