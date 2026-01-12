@@ -4,14 +4,152 @@
 {% block title %} Despre {% endblock %}
 
 {% block main %}
-    <section id="misiune">
-        <h2> Misiune si valori </h2>
-        <p>Ne propunem sa conectam clientii cu masinile potrivite, oferind transparenta si servicii de calitate.</p>
-        <img src = "{% static 'aplicatie_masini/imagini/despre.jpg' %}" alt="Despre">
+
+    <div class="despre-page-header">
+        <div class="despre-container">
+            <h1>Cine suntem</h1>
+            <p>Pasiune pentru motoare, respect pentru clienți.</p>
+        </div>
+    </div>
+
+    <section id="misiune" class="despre-section despre-section-padding">
+        <div class="despre-container">
+            <div class="despre-wrapper">
+                
+                <div class="despre-text">
+                    <span class="despre-subtitle">Misiunea noastră</span>
+                    <h2>Conectăm oamenii cu mașina potrivită</h2>
+                    <p class="despre-lead-text">
+                        Într-o lume plină de opțiuni, noi oferim claritate. Ne-am propus să transformăm procesul de cumpărare a unei mașini dintr-o corvoadă într-o experiență plăcută și sigură.
+                    </p>
+                    <p>
+                        Fiecare mașină din parcul nostru trece printr-o verificare riguroasă. Nu vindem doar autovehicule, vindem siguranța că ai făcut alegerea corectă pentru tine și familia ta.
+                    </p>
+
+                    <div class="despre-values-grid">
+                        <div class="despre-value-item">
+                            <div class="despre-icon-box"><i class="fa-solid fa-handshake"></i></div>
+                            <div>
+                                <h5>Transparență</h5>
+                                <p>Istoric verificat și prețuri corecte.</p>
+                            </div>
+                        </div>
+                        <div class="despre-value-item">
+                            <div class="despre-icon-box"><i class="fa-solid fa-medal"></i></div>
+                            <div>
+                                <h5>Calitate</h5>
+                                <p>Doar mașini testate tehnic.</p>
+                            </div>
+                        </div>
+                        <div class="despre-value-item">
+                            <div class="despre-icon-box"><i class="fa-solid fa-heart"></i></div>
+                            <div>
+                                <h5>Pasiune</h5>
+                                <p>Consultanță oferită de experți.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="despre-image">
+                    <div class="despre-image-frame"></div>
+                    <img src="{% static 'aplicatie_masini/imagini/despre.jpg' %}" alt="Despre Noi Showroom">
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="statistici" class="stats-section">
+        <div class="despre-container">
+            <div class="stats-grid">
+                
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-number">10+</div>
+                    <div class="stat-label">Ani de experiență</div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-car"></i>
+                    </div>
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label">Mașini Vândute</div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Clienți Mulțumiți</div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-award"></i>
+                    </div>
+                    <div class="stat-number">12</div>
+                    <div class="stat-label">Luni Garanție</div>
+                </div>
+
+            </div>
+        </div>
     </section>
 
-    <section id="echipa">
-        <h2>Echipa</h2>
-        <p>Echipa noastra este formata din specialisti în vanzări auto, mecanica si servicii clienti.</p>
+    <section id="echipa" class="despre-team-section despre-section-padding despre-bg-light">
+        <div class="despre-container">
+            <div class="despre-section-header">
+                <h2>Cunoaște echipa</h2>
+                <p>Oamenii care fac totul posibil</p>
+            </div>
+
+            <div class="despre-team-grid">
+                <div class="despre-team-card">
+                    <div class="despre-team-img-wrapper">
+                        <img src="{% static 'aplicatie_masini/imagini/team1.jpg' %}" alt="Manager" onerror="this.src='https://ui-avatars.com/api/?name=Ion+Popescu&background=333&color=fff&size=200'">
+                    </div>
+                    <div class="despre-team-info">
+                        <h3>Ion Popescu</h3>
+                        <span class="despre-role">Fondator & Manager</span>
+                        <div class="despre-social-links">
+                            <a href="#"><i class="fa-brands fa-linkedin"></i></a>
+                            <a href="#"><i class="fa-solid fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="despre-team-card">
+                    <div class="despre-team-img-wrapper">
+                        <img src="{% static 'aplicatie_masini/imagini/team2.jpg' %}" alt="Sales" onerror="this.src='https://ui-avatars.com/api/?name=Maria+Ionescu&background=333&color=fff&size=200'">
+                    </div>
+                    <div class="despre-team-info">
+                        <h3>Maria Ionescu</h3>
+                        <span class="despre-role">Consultant Vânzări</span>
+                        <div class="despre-social-links">
+                            <a href="#"><i class="fa-brands fa-linkedin"></i></a>
+                            <a href="#"><i class="fa-solid fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="despre-team-card">
+                    <div class="despre-team-img-wrapper">
+                        <img src="{% static 'aplicatie_masini/imagini/team3.jpg' %}" alt="Mechanic" onerror="this.src='https://ui-avatars.com/api/?name=Alex+Dima&background=333&color=fff&size=200'">
+                    </div>
+                    <div class="despre-team-info">
+                        <h3>Alex Dima</h3>
+                        <span class="despre-role">Șef Service</span>
+                        <div class="despre-social-links">
+                            <a href="#"><i class="fa-brands fa-linkedin"></i></a>
+                            <a href="#"><i class="fa-solid fa-envelope"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
+
 {% endblock %}

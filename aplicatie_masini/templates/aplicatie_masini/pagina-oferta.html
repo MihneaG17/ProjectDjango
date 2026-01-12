@@ -4,6 +4,13 @@
 
 {% block main %}
     <div class="offer-wrapper">
+        {% if messages %}
+            {% for mesaj in messages %}
+                <div class="alert alert-{{ mesaj.tags }}">
+                    {{ mesaj }}
+                </div>
+            {% endfor %}
+        {% endif %}
         <div class="offer-content">
             <div class="offer-icon-gift">
                 <i class="fa-solid fa-gift"></i>

@@ -13,11 +13,15 @@
    <header>
         <div class="topbar">
             <h1 class="logo"> <a href="{% url 'index' %}"> <img src="{% static 'aplicatie_masini/imagini/logo_site.png' %}" alt="Logo" class="logo-img"></a></h1>
+            <div class="hamburger-menu" id="hamburger-icon">
+                <i class="fa-solid fa-bars"></i>
+            </div>
             <nav class="menu">
-                <ul class="menu-list">
+                <ul class="menu-list" id="nav-menu">
                     <li> <a href="{% url 'index' %}">Acasa</a>
                         <ul class="submenu">
                             <li> <a href="{% url 'index' %}#prezentare">Prezentare</a></li>
+                            <li> <a href="{% url 'index' %}#servicii">Servicii</a></li>
                             <li> <a href="{% url 'index' %}#oferte">Oferte</a></li>
                             <li> <a href="{% url 'index' %}#testimoniale">Testimoniale clienti</a></li>
                         </ul>
@@ -34,6 +38,7 @@
                     <li> <a href="{% url 'despre' %}">Despre</a>
                         <ul class="submenu">
                             <li><a href="{% url 'despre' %}#misiune">Misiune</a></li>
+                            <li><a href="{% url 'despre' %}#statistici">Statistici</a></li>
                             <li><a href="{% url 'despre' %}#echipa">Echipa</a></li>
                         </ul>
                     </li>
@@ -75,5 +80,24 @@
             <p>IP Client: {{ ip_client }}</p>
         </div>
    </footer>
+
+   <script>
+        const hamburger = document.getElementById('hamburger-icon');
+        const navMenu = document.getElementById('nav-menu');
+
+        hamburger.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            
+            const icon = hamburger.querySelector('i');
+            if (navMenu.classList.contains('active')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-xmark');
+            } else {
+                icon.classList.remove('fa-xmark');
+                icon.classList.add('fa-bars');
+            }
+        });
+    </script>
+
 </body>
 </html>

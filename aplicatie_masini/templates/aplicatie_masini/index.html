@@ -4,26 +4,138 @@
 {% block title %} Acasa {% endblock %}
 
 {% block main %}
+    
     {% if messages %}
+        <div class="container-mesaje">
         {% for mesaj in messages %}
             <div class="alert alert-{{ mesaj.tags }}">
                 {{ mesaj }}
             </div>
         {% endfor %}
+        </div>
     {% endif %}
-    <section id="prezentare" class="hero">
-        <img src = "{% static 'aplicatie_masini/imagini/banner.jpg' %}" alt="banner" class="hero-img">
-        <h2> {{ banner_text }} </h2>
-        <p>Platforma noastra iti ofera o selectie atenta de masini verificate.</p>
+
+    <section id="prezentare" class="index-hero-section">
+        <div class="index-hero-overlay"></div>
+        <img src="{% static 'aplicatie_masini/imagini/banner.jpg' %}" alt="Luxury Car Banner" class="index-hero-bg-img">
+        
+        <div class="index-hero-content">
+            <h1 class="index-hero-title">{{ banner_text }}</h1>
+            <p class="index-hero-subtitle">Platforma noastră îți oferă o selecție atentă de mașini verificate, pregătite pentru drum.</p>
+            <div class="index-hero-buttons">
+                <a href="#oferte" class="index-btn index-btn-primary">Vezi Ofertele</a>
+                <a href="{% url 'contact' %}" class="index-btn index-btn-outline">Contactează-ne</a>
+            </div>
+        </div>
     </section>
 
-    <section id="oferte" class="oferte">
-        <h2>Masini noi si oferte</h2>
-        <p>Vor fi afisate primele 3-5 masini</p>
+    <section id="servicii" class="services-section">
+        <div class="container">
+            <div class="section-header-center">
+                <h2>De ce să cumperi de la noi?</h2>
+                <p>Oferim servicii complete pentru liniștea ta.</p>
+            </div>
+
+            <div class="services-grid">
+                
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fa-solid fa-money-bill-wave"></i>
+                    </div>
+                    <h3>Finanțare Rapidă</h3>
+                    <p>Aprobare pe loc pentru credit auto sau leasing. Dobânzi avantajoase începând de la 5%.</p>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fa-solid fa-rotate"></i>
+                    </div>
+                    <h3>Sistem Buy-Back</h3>
+                    <p>Vino cu mașina ta veche și o folosim ca avans pentru cea nouă. Evaluare corectă și rapidă.</p>
+                </div>
+
+                <div class="service-card">
+                    <div class="service-icon">
+                        <i class="fa-solid fa-clipboard-check"></i>
+                    </div>
+                    <h3>Istoric Verificat</h3>
+                    <p>Toate mașinile au kilometraj real, certificat, și istoric de service complet verificabil.</p>
+                </div>
+
+            </div>
+        </div>
     </section>
 
-    <section id="testimoniale" class="testimoniale">
-        <h2>Testimoniale</h2>
-        <p>Experientele clientilor nostri</p>
+    <section id="oferte" class="index-section-padding index-bg-light">
+        <div class="index-container">
+            <div class="index-section-header">
+                <h2>Ultimele apariții</h2>
+                <p>Cele mai noi modele intrate în stocul nostru</p>
+            </div>
+
+            <div class="index-oferte-grid">
+                {% for masina in oferte_recente %}
+                    <article class="index-car-card">
+                        <div class="index-car-image-wrapper">
+                            {% if masina.imagine %}
+                                <img src="{{ masina.imagine.url }}" alt="{{ masina.model }}">
+                            {% else %}
+                                <img src="{% static 'aplicatie_masini/imagini/placeholder.jpg' %}" alt="Fara imagine">
+                            {% endif %}
+                            <span class="index-badge-nou">NOU</span>
+                        </div>
+                        <div class="index-car-info">
+                            <h3>{{ masina.marca }} - {{ masina.model }} </h3> 
+                            <ul class="index-car-specs">
+                                <li><i class="fas fa-calendar"></i> {{ masina.an_fabricatie }}</li>
+                            </ul>
+                            <div class="index-car-footer">
+                                <span class="index-price">{{ masina.pret_masina }} EUR</span>
+                                <a href="{% url 'detalii_masina' masina.id %}" class="index-btn-text">Detalii &rarr;</a>
+                            </div>
+                        </div>
+                    </article>
+                {% empty %}
+                    <p>Momentan nu există oferte disponibile.</p>
+                {% endfor %}
+            </div>
+        </div>
     </section>
+
+    <section id="testimoniale" class="index-section-padding">
+        <div class="index-container">
+            <div class="index-section-header">
+                <h2>Ce spun clienții</h2>
+                <p>Experiențe reale de la oameni reali</p>
+            </div>
+
+            <div class="index-testimonials-grid">
+                <div class="index-testimonial-card">
+                    <div class="avatar-circle">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="stars">★★★★★</div>
+                    <p>"O experiență excelentă! Mașina a fost exact ca în descriere, iar procesul de cumpărare foarte rapid."</p>
+                    <h4>- Andrei Popescu</h4>
+                </div>
+                <div class="index-testimonial-card">
+                    <div class="avatar-circle">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="stars">★★★★★</div>
+                    <p>"Recomand cu încredere. Personal amabil și mașini foarte curate."</p>
+                    <h4>- Elena Ionescu</h4>
+                </div>
+                <div class="index-testimonial-card">
+                    <div class="avatar-circle">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="stars">★★★★☆</div>
+                    <p>"Raport calitate-preț foarte bun. Sunt mulțumit de achiziție."</p>
+                    <h4>- Mihai D.</h4>
+                </div>
+            </div>
+        </div>
+    </section>
+
 {% endblock %}

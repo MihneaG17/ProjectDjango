@@ -25,7 +25,6 @@ locale.setlocale(locale.LC_TIME, 'romanian')
 # Create your views here.
 from django.http import HttpResponse
 
-#to-do - lab5 documentatie
 logger=logging.getLogger('django')
 
 def info(request):
@@ -63,7 +62,7 @@ def info(request):
     
     continut_info = f"""
                     <h1>Informatii despre server </h1>
-                        <p>{afis_data(data_param)}</p>
+                        <p>{data_info}</p>
                         {param_section}
                     """
     return render(request, 'aplicatie_masini/info.html', {
@@ -330,12 +329,14 @@ def afis_log(request):
 #view-uri pentru template rendering
 def index(request):
     categorii_meniu=CategorieMasina.objects.all().order_by('nume_categorie')
+    masini_recente=Masina.objects.all().order_by("-id")[:3]
     return render(request,"aplicatie_masini/index.html",
         {
-            "titlu_tab":"Magazin de masini",
-            "banner_text":"Cele mai bune masini la un click distanta",
+            "titlu_tab":"Magazin de mașini",
+            "banner_text":"Cele mai bune mașini la un click distanță",
             "ip_client":request.META.get('REMOTE_ADDR',''),
             "toate_categoriile":categorii_meniu,
+            "oferte_recente": masini_recente,
         }
     )
 
@@ -379,7 +380,7 @@ def produse(request, nume_categorie=None):
     
     param_sortare=request.GET.get("sort")
     nrPagina=request.GET.get("pagina")
-    elemente_paginare_str=request.GET.get("elemente_afisate")
+    elemente_pe_pagina=9
     
     if not nrPagina:
         nrPagina=1
@@ -428,7 +429,7 @@ def produse(request, nume_categorie=None):
         if cd.get('kilometraj_max'):
             masini = masini.filter(kilometraj__lte=cd.get('kilometraj_max'))
         if cd.get('elemente_afisate'):
-            elemente_pe_pagina_int = cd.get('elemente_afisate')
+            elemente_pe_pagina = cd.get('elemente_afisate')
             mesajPaginare = "În urma repaginării este posibil ca unele produse deja vizualizate să fie din nou afișate sau altele să fie sărite"
     
     if not mesajEroare:
@@ -442,17 +443,8 @@ def produse(request, nume_categorie=None):
     if not masini.exists() and not mesajEroare:
         mesajEroare="Nu au fost găsite produse care să corespundă filtrelor"
         obPagina=None
-    else: 
-        elemente_pe_pagina_int=10
-        if elemente_paginare_str:
-            try:
-                elemente_pe_pagina_int=int(elemente_paginare_str)
-                if elemente_pe_pagina_int<0:
-                    elemente_pe_pagina_int=10
-                mesajPaginare="În urma repaginării este posibil ca unele produse deja vizualizate să fie din nou afișate sau altele să fie sărite"
-            except ValueError:
-                mesajPaginare="Valoarea introdusă nu este de tip întreg"    
-        paginator = Paginator(masini, elemente_pe_pagina_int)
+    else:   
+        paginator = Paginator(masini, elemente_pe_pagina)
         try:
             obPagina = paginator.page(nrPagina)
         except EmptyPage:
@@ -661,7 +653,7 @@ def login_view(request):
         else:
             ip=request.META.get('REMOTE_ADDR')
             user_incercat=request.POST.get('username')
-            IncercareLogare.objects.create(username_folosit=user_incercat, ip_folosit=ip)
+            IncercareLogare.objects.create(username_folosit=user_incercat, ip_folosit=ip) #adaugare inregistrare in baza de date direct din cod
             
             timp_acum=timezone.now()
             limita_timp=timp_acum-timedelta(minutes=2)
@@ -802,7 +794,7 @@ def eroare403(request):
         mesaj_atentionare=f"Ai incercat sa accesezi resurse interzise de {nr_accesari}"
     
     titlu=""
-    mesaj_personalizat="Ai încercat să accesezi o resursă interzisăs"
+    mesaj_personalizat="Ai încercat să accesezi o resursă interzisă"
     return render(request, 'aplicatie_masini/eroare403.html', {
         'toate_categoriile': categorii_meniu,
         'titlu': titlu,
