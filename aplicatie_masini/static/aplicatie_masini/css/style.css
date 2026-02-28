@@ -349,6 +349,7 @@ footer {
     overflow: hidden;
     flex-direction: column;
     transition: all 0.3 ease-in-out;
+    position: relative;
 }
 
 .card-img {
@@ -1829,4 +1830,158 @@ footer {
     .menu-list li:active > .submenu {
         display: block;
     }
+}
+
+/* Stiluri pentru produse indisponibile */
+.masina-card--indisponibil {
+    background-color: #f5f5f5;
+    opacity: 0.7;
+}
+
+.masina-card--indisponibil .card-img,
+.masina-card--indisponibil .card-img-placeholder {
+    filter: grayscale(100%);
+    opacity: 0.6;
+}
+
+.stoc-indisponibil-marker {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #d32f2f;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    z-index: 10;
+}
+
+.in-cos-marker {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #4CAF50;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    z-index: 10;
+}
+
+.stoc-verde {
+    color: #4CAF50;
+    font-weight: bold;
+}
+
+.stoc-rosu {
+    color: #d32f2f;
+    font-weight: bold;
+}
+
+/* Controluri coș */
+.cart-controls,
+.cart-controls-detail {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.btn-qty {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.btn-qty:hover {
+    background-color: #e8e8e8;
+    border-color: #999;
+}
+
+.qty-input {
+    width: 60px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    text-align: center;
+    font-size: 1rem;
+}
+
+.qty-input:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+}
+
+.btn-add-to-cart {
+    width: 100%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-add-to-cart:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-remove {
+    width: 100%;
+    padding: 10px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.btn-remove:hover {
+    background-color: #da190b;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-remove-detail {
+    margin-left: 10px;
+    padding: 10px 20px;
+}
+
+.btn-danger {
+    background-color: #f44336;
+}
+
+.btn-danger:hover {
+    background-color: #da190b;
+}
+
+.product-unavailable {
+    padding: 15px;
+    text-align: center;
+    background-color: #ffebee;
+    border-radius: 4px;
 }

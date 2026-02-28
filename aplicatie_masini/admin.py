@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Locatie, Masina, Marca, CategorieMasina, Serviciu, Accesoriu, CustomUser, IncercareLogare
+from .models import Locatie, Masina, Marca, CategorieMasina, Serviciu, Accesoriu, CustomUser, IncercareLogare, Comanda, ItemComanda
 
 admin.site.site_header = "Panou de Administrare Magazin de masini"
 admin.site.site_title = "Admin Site Masini"
@@ -33,7 +33,7 @@ class MasinaAdmin(admin.ModelAdmin):
             'fields': ('marca', 'categorie', 'model')
         }),
         ('Informatii Specifice', {
-            'fields': ('kilometraj', 'tip_combustibil','pret_masina', 'an_fabricatie', 'in_stoc') 
+            'fields': ('kilometraj', 'tip_combustibil','pret_masina', 'an_fabricatie', 'stoc') 
         }),
         ('Suplimentare', {
             'fields': ('servicii', 'accesorii','imagine',),
@@ -113,6 +113,34 @@ admin.site.register(Serviciu, ServiciuAdmin)
 admin.site.register(Accesoriu, AccesoriuAdmin)
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(IncercareLogare)
+
+
+class ItemComandaInline(admin.TabularInline):
+    model = ItemComanda
+    extra = 0
+    fields = ['masina', 'cantitate', 'pret_unitar', 'subtotal']
+    readonly_fields = ['subtotal']
+
+
+class ComandaAdmin(admin.ModelAdmin):
+    list_display = ('id', 'utilizator', 'data_comanda', 'pret_total', 'numar_produse')
+    list_filter = ['data_comanda', 'utilizator']
+    search_fields = ['utilizator__username', 'utilizator__email']
+    readonly_fields = ['data_comanda', 'pret_total']
+    inlines = [ItemComandaInline]
+    
+    def numar_produse(self, obj):
+        return obj.itemcomanda_set.count()
+    numar_produse.short_description = 'Produse'
+    
+    fieldsets = (
+        ('Informații Comandă', {
+            'fields': ('utilizator', 'data_comanda', 'pret_total')
+        }),
+    )
+
+
+admin.site.register(Comanda, ComandaAdmin)
 
 
 """

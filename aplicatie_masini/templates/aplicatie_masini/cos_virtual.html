@@ -1,0 +1,402 @@
+{% extends "aplicatie_masini/baza.html" %}
+{% load static %}
+
+{% block title %}
+    Coșul Virtual
+{% endblock %}
+
+{% block main %}
+    {% csrf_token %}
+    <div class="container-cos">
+        <h1 class="cos-heading">🛒 Coșul Virtual</h1>
+        
+        <div id="cos-gol" class="cos-status-message">
+            <p>Coșul tău este gol. <a href="{% url 'produse' %}">Mergi la produse</a></p>
+        </div>
+
+        <div id="cos-continut" style="display: none;">
+            <div class="cos-table-wrapper">
+                <table class="cos-table">
+                    <thead>
+                        <tr>
+                            <th>Produs</th>
+                            <th>Preț Unitar</th>
+                            <th>Cantitate</th>
+                            <th>Subtotal</th>
+                            <th>Acțiuni</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cos-items">
+                        <!-- Produsele vor fi adăugate dinamic aici -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="cos-summary">
+                <div class="summary-item">
+                    <span>Subtotal:</span>
+                    <span id="total-subtotal">0.00 EUR</span>
+                </div>
+                <div class="summary-item summary-total">
+                    <span>Total:</span>
+                    <span id="total-final">0.00 EUR</span>
+                </div>
+                <div class="summary-actions">
+                    <button class="btn btn-secondary" onclick="window.location.href='{% url 'produse' %}'">Continuă cumpărăturile</button>
+                    <button class="btn btn-danger" onclick="clearCart()">Golește coșul</button>
+                    <button class="btn btn-primary" onclick="finalizareComanda()">Finalizează comanda</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'aplicatie_masini/js/cart.js' %}"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            renderCart();
+        });
+        function renderCart() {
+            const cart = getCart();
+            const cartItems = document.getElementById('cos-items');
+            const cartEmpty = document.getElementById('cos-gol');
+            const cartContent = document.getElementById('cos-continut');
+
+            cartItems.innerHTML = '';
+
+            if (Object.keys(cart).length === 0) {
+                cartEmpty.style.display = 'block';
+                cartContent.style.display = 'none';
+                return;
+            }
+
+            cartEmpty.style.display = 'none';
+            cartContent.style.display = 'block';
+
+            let totalSubtotal = 0;
+
+            Object.keys(cart).forEach(productId => {
+                const product = cart[productId];
+                const subtotal = product.price * product.quantity;
+                totalSubtotal += subtotal;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <div class="product-name">
+                            <strong>${product.name}</strong>
+                            <small style="display: block; color: #999; margin-top: 5px;">Stoc max: ${product.maxStock} unități</small>
+                        </div>
+                    </td>
+                    <td class="text-right">${product.price.toFixed(2)} EUR</td>
+                    <td>
+                        <div class="quantity-control-cart">
+                            <button class="btn-qty-cart" onclick="updateQuantityFromCart(${productId}, ${product.quantity - 1})">−</button>
+                            <input type="number" class="qty-input-cart" value="${product.quantity}" min="1" max="${product.maxStock}" onchange="updateQuantityFromCart(${productId}, this.value)">
+                            <button class="btn-qty-cart" onclick="updateQuantityFromCart(${productId}, ${product.quantity + 1})">+</button>
+                        </div>
+                    </td>
+                    <td class="text-right subtotal-cell">${subtotal.toFixed(2)} EUR</td>
+                    <td>
+                        <button class="btn btn-danger btn-small" onclick="removeFromCartAndRender(${productId})">Șterge</button>
+                    </td>
+                `;
+                cartItems.appendChild(row);
+            });
+
+            document.getElementById('total-subtotal').textContent = totalSubtotal.toFixed(2) + ' EUR';
+            document.getElementById('total-final').textContent = totalSubtotal.toFixed(2) + ' EUR';
+        }
+
+        function updateQuantityFromCart(productId, newQuantity) {
+            newQuantity = parseInt(newQuantity);
+
+            if (isNaN(newQuantity) || newQuantity < 1) {
+                removeFromCartAndRender(productId);
+                return;
+            }
+
+            const cart = getCart();
+            if (cart[productId]) {
+                const maxStock = cart[productId].maxStock;
+
+                if (newQuantity > maxStock) {
+                    alert(`⚠️ Nu puteți adăuga mai mult decât stocul disponibil (${maxStock} unități)`);
+                    renderCart(); 
+                    return;
+                }
+                
+                cart[productId].quantity = newQuantity;
+                saveCart(cart);
+                renderCart();
+            }
+        }
+
+        function removeFromCartAndRender(productId) {
+            removeFromCart(productId);
+            renderCart();
+        }
+
+        function clearCart() {
+            if (confirm('Ești sigur că vrei să golești coșul complet?')) {
+                localStorage.removeItem('virtual_cart');
+                renderCart();
+                showNotification('✓ Coșul a fost golit!');
+            }
+        }
+
+        function finalizareComanda() {
+            const cart = getCart();
+            if (Object.keys(cart).length === 0) {
+                alert('Coșul este gol!');
+                return;
+            }
+
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '⏳ Se procesează...';
+
+            fetch('{% url 'checkout' %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify({
+                    cart: cart
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.textContent = originalText;
+
+                if (data.success) {
+                    localStorage.removeItem('virtual_cart');
+
+                    updateCartUI();
+
+                    showNotification(data.message);
+                    
+                    setTimeout(() => {
+                        window.location.href = '{% url 'produse' %}';
+                    }, 2000);
+                } else {
+                    alert('❌ Eroare: ' + data.error);
+                }
+            })
+            .catch(error => {
+                btn.disabled = false;
+                btn.textContent = originalText;
+                alert('Eroare la procesarea comenzii: ' + error);
+            });
+        }
+
+        function getCSRFToken() {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+
+    <style>
+        .container-cos {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .cos-heading {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+            font-size: 2.2rem;
+        }
+
+        .cos-status-message {
+            text-align: center;
+            padding: 40px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            font-size: 1.1rem;
+        }
+
+        .cos-status-message a {
+            color: #4CAF50;
+            font-weight: bold;
+            text-decoration: none;
+            border-bottom: 2px solid #4CAF50;
+        }
+
+        .cos-table-wrapper {
+            overflow-x: auto;
+            margin-bottom: 30px;
+        }
+
+        .cos-table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .cos-table thead {
+            background-color: #f9f9f9;
+            border-bottom: 2px solid #ddd;
+        }
+
+        .cos-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .cos-table td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cos-table tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .text-right {
+            text-align: right;
+        }
+
+        .product-name {
+            font-size: 1rem;
+        }
+
+        .quantity-control-cart {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .btn-qty-cart {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #ddd;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+        }
+
+        .btn-qty-cart:hover {
+            background-color: #e8e8e8;
+            border-color: #999;
+        }
+
+        .qty-input-cart {
+            width: 50px;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+
+        .qty-input-cart:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.3);
+        }
+
+        .subtotal-cell {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.9rem;
+        }
+
+        .cos-summary {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            font-size: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .summary-item:last-of-type {
+            border-bottom: none;
+        }
+
+        .summary-total {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2c3e50;
+            padding: 15px 0;
+            border-top: 2px solid #ddd;
+            border-bottom: none;
+        }
+
+        .summary-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .summary-actions button {
+            flex: 1;
+            min-width: 150px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .cos-heading {
+                font-size: 1.8rem;
+            }
+
+            .cos-table th,
+            .cos-table td {
+                padding: 10px 5px;
+                font-size: 0.9rem;
+            }
+
+            .summary-actions {
+                flex-direction: column;
+            }
+
+            .summary-actions button {
+                width: 100%;
+            }
+
+            .quantity-control-cart {
+                flex-direction: column;
+            }
+        }
+    </style>
+{% endblock %}

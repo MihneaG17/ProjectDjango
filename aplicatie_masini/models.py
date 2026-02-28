@@ -59,7 +59,7 @@ class Masina(models.Model):
     marca = models.ForeignKey(Marca, on_delete=models.CASCADE)
     categorie = models.ForeignKey(CategorieMasina, on_delete=models.CASCADE)
     pret_masina = models.FloatField()
-    in_stoc = models.BooleanField(default = True)
+    stoc = models.IntegerField(default=1, verbose_name="Stoc disponibil")
     model = models.CharField(max_length=100)
     an_fabricatie = models.IntegerField()
     kilometraj = models.IntegerField(default = 0)
@@ -112,3 +112,40 @@ class IncercareLogare(models.Model):
     
     def __str__(self):
         return f"Incercare de conectare de pe ip-ul {self.ip_folosit} la data {self.data_incercare}"
+
+
+class Comanda(models.Model):
+    utilizator = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='comenzi')
+    data_comanda = models.DateTimeField(auto_now_add=True)
+    pret_total = models.FloatField(default=0)
+    
+    class Meta:
+        ordering = ['-data_comanda']
+        verbose_name_plural = "Comenzi"
+    
+    def __str__(self):
+        return f"Comanda #{self.id} - {self.utilizator.username} - {self.data_comanda.strftime('%d.%m.%Y %H:%M')}"
+    
+    def calculeaza_total(self):
+        """Calculeaza totalul comenzii din itemurile asociate"""
+        total = sum(item.subtotal for item in self.itemcomanda_set.all())
+        self.pret_total = total
+        self.save()
+        return total
+
+
+class ItemComanda(models.Model):
+    comanda = models.ForeignKey(Comanda, on_delete=models.CASCADE)
+    masina = models.ForeignKey(Masina, on_delete=models.CASCADE)
+    cantitate = models.IntegerField(default=1)
+    pret_unitar = models.FloatField()
+    
+    class Meta:
+        verbose_name_plural = "Iteme Comenzi"
+    
+    @property
+    def subtotal(self):
+        return self.cantitate * self.pret_unitar
+    
+    def __str__(self):
+        return f"{self.masina} x{self.cantitate} - Comanda #{self.comanda.id}"

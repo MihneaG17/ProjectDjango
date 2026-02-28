@@ -9,17 +9,29 @@ from django.core.mail import send_mail, mail_admins
 from django.utils import timezone
 from django.utils.crypto import get_random_string
 from django.urls import reverse
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.template.loader import render_to_string
+from django.db import models
+from django.db.models import Case, When, Value, IntegerField
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 from datetime import date, datetime, timedelta
 import locale
 import json
 import os
 import time
+import unicodedata
 from . import middleware
-from .models import Locatie, Masina, Marca, CategorieMasina, Serviciu, Accesoriu, CustomUser, IncercareLogare
+from .models import Locatie, Masina, Marca, CategorieMasina, Serviciu, Accesoriu, CustomUser, IncercareLogare, Comanda, ItemComanda
 from .forms import MasinaFilterForm, ContactForm, CustomUserCreationForm, CustomAuthenticationForm, FormularAdaugareProdus
 import logging
+from reportlab.lib.pagesizes import letter
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
+from io import BytesIO
 locale.setlocale(locale.LC_TIME, 'romanian')
 
 # Create your views here.
@@ -434,11 +446,29 @@ def produse(request, nume_categorie=None):
     
     if not mesajEroare:
         if param_sortare=='a':
-            masini=masini.order_by('pret_masina')
+            masini=masini.annotate(
+                stoc_disponibil=Case(
+                    When(stoc__gt=0, then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField()
+                )
+            ).order_by('-stoc_disponibil', 'pret_masina')
         elif param_sortare=='d':
-            masini=masini.order_by('-pret_masina')
+            masini=masini.annotate(
+                stoc_disponibil=Case(
+                    When(stoc__gt=0, then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField()
+                )
+            ).order_by('-stoc_disponibil', '-pret_masina')
         else:
-            masini=masini.order_by('-data_adaugarii') #implicit dupa data adaugarii
+            masini=masini.annotate(
+                stoc_disponibil=Case(
+                    When(stoc__gt=0, then=Value(1)),
+                    default=Value(0),
+                    output_field=IntegerField()
+                )
+            ).order_by('-stoc_disponibil', '-data_adaugarii')
     
     if not masini.exists() and not mesajEroare:
         mesajEroare="Nu au fost găsite produse care să corespundă filtrelor"
@@ -814,6 +844,17 @@ def pagina_oferta(request):
             messages.info(request, "Felicitări! Ai deblocat oferta specială prin accesarea bannerului.") #mesaj info 2 
         except Permission.DoesNotExist:
             pass
+
+
+def cos_virtual(request):
+    """
+    Pagina coșului virtual - gestionează și afișează produsele adiauste în coș
+    """
+    categorii_meniu = CategorieMasina.objects.all().order_by('nume_categorie')
+    return render(request, 'aplicatie_masini/cos_virtual.html', {
+        'toate_categoriile': categorii_meniu,
+    })
+
     if not request.user.has_perm('aplicatie_masini.vizualizare_oferta'):
         nr_accesari=request.session.get('contor_403',0)
         nr_accesari+=1
@@ -837,3 +878,284 @@ def pagina_oferta(request):
         'toate_categoriile': categorii_meniu,
         'ip_client': request.META.get('REMOTE_ADDR',''),
     })
+
+
+def elimina_diacritice(text):
+    """
+    Elimina diacriticele dintr-un text
+    """
+    if not text:
+        return text
+    nfd_form = unicodedata.normalize('NFD', str(text))
+    return ''.join(char for char in nfd_form if unicodedata.category(char) != 'Mn')
+
+
+def genereaza_factura_pdf(comanda, request=None):
+
+    folder_facturi = os.path.join(settings.BASE_DIR, 'temporar-facturi', comanda.utilizator.username)
+    os.makedirs(folder_facturi, exist_ok=True)
+    
+    timestamp = int(time.time())
+    cale_fisier = os.path.join(folder_facturi, f'factura-{timestamp}.pdf')
+    
+    doc = SimpleDocTemplate(cale_fisier, pagesize=letter, topMargin=0.5*inch, bottomMargin=0.5*inch)
+    story = []
+    styles = getSampleStyleSheet()
+
+    style_titlu = ParagraphStyle(
+        'CustomTitle',
+        parent=styles['Heading1'],
+        fontSize=24,
+        textColor=colors.HexColor('#1f1f1f'),
+        spaceAfter=30,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold'
+    )
+    
+    style_heading = ParagraphStyle(
+        'CustomHeading',
+        parent=styles['Heading2'],
+        fontSize=12,
+        textColor=colors.HexColor('#333333'),
+        spaceAfter=12,
+        fontName='Helvetica-Bold',
+        borderPadding=5,
+        borderColor=colors.HexColor('#4CAF50'),
+        borderWidth=1,
+        backColor=colors.HexColor('#f0f8f0')
+    )
+    
+    style_normal = ParagraphStyle(
+        'CustomNormal',
+        parent=styles['Normal'],
+        fontSize=10,
+        textColor=colors.HexColor('#333333'),
+        spaceAfter=8
+    )
+
+    story.append(Paragraph('FACTURA DE VANZARE', style_titlu))
+    story.append(Spacer(1, 0.2*inch))
+
+    data_formatata = comanda.data_comanda.strftime('%d.%m.%Y %H:%M')
+    info_comanda = f"""
+    <b>Numar Factura:</b> #{comanda.id} | <b>Data:</b> {data_formatata}<br/>
+    """
+    story.append(Paragraph(info_comanda, style_normal))
+    story.append(Spacer(1, 0.15*inch))
+
+    admin_email = settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'admin@magazinmasini.ro'
+    story.append(Paragraph('INFORMATII VANZATOR', style_heading))
+    vanzator_info = f"""
+    <b>Magazin Masini</b><br/>
+    Contact: {admin_email}<br/>
+    """
+    story.append(Paragraph(vanzator_info, style_normal))
+    story.append(Spacer(1, 0.15*inch))
+
+    story.append(Paragraph('INFORMATII CLIENT', style_heading))
+    
+    client_first = elimina_diacritice(comanda.utilizator.first_name or 'N/A')
+    client_last = elimina_diacritice(comanda.utilizator.last_name or 'N/A')
+    client_email = elimina_diacritice(comanda.utilizator.email)
+    client_telefon = elimina_diacritice(comanda.utilizator.telefon or 'N/A')
+    client_strada = elimina_diacritice(comanda.utilizator.strada or 'N/A')
+    client_oras = elimina_diacritice(comanda.utilizator.oras or 'N/A')
+    client_cod = elimina_diacritice(comanda.utilizator.cod_postal or 'N/A')
+    
+    client_info = f"""
+    <b>Nume:</b> {client_first}<br/>
+    <b>Prenume:</b> {client_last}<br/>
+    <b>E-mail:</b> {client_email}<br/>
+    <b>Telefon:</b> {client_telefon}<br/>
+    <b>Adresa:</b> {client_strada}, {client_oras} {client_cod}<br/>
+    """
+    story.append(Paragraph(client_info, style_normal))
+    story.append(Spacer(1, 0.2*inch))
+
+    story.append(Paragraph('PRODUSELE COMANDATE', style_heading))
+
+    table_data = [
+        ['Produs', 'Categoria', 'Combustibil', 'Cantitate', 'Pret Unitar', 'Subtotal']
+    ]
+    
+    items = comanda.itemcomanda_set.all()
+    for item in items:
+        masina = item.masina
+        produs_text = elimina_diacritice(f"{masina.marca.nume_marca} {masina.model} ({masina.an_fabricatie})")
+        categorie_text = elimina_diacritice(masina.categorie.nume_categorie)
+        combustibil_text = elimina_diacritice(masina.get_tip_combustibil_display())
+        
+        tabla_row = [
+            produs_text,
+            categorie_text,
+            combustibil_text,
+            str(item.cantitate),
+            f"{item.pret_unitar:.2f} EUR",
+            f"{item.subtotal:.2f} EUR"
+        ]
+        table_data.append(tabla_row)
+
+    t = Table(table_data, colWidths=[2*inch, 1.2*inch, 1*inch, 0.8*inch, 1*inch, 1*inch])
+    t.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4CAF50')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 11),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+        ('GRID', (0, 0), (-1, -1), 1, colors.HexColor('#ddd')),
+        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f9f9f9')]),
+        ('FONTSIZE', (0, 1), (-1, -1), 9),
+        ('ALIGN', (3, 1), (-1, -1), 'RIGHT'),
+    ]))
+    
+    story.append(t)
+    story.append(Spacer(1, 0.2*inch))
+
+    story.append(Paragraph('REZUMAT FACTURII', style_heading))
+    
+    total_produse = sum(item.cantitate for item in items)
+    total_pret = comanda.pret_total
+    
+    rezumat_text = f"""
+    <b>Total Produse:</b> {total_produse} unitati<br/>
+    <b style="font-size: 14px; color: #4CAF50;">TOTAL DE PLATA: {total_pret:.2f} EUR</b><br/>
+    <br/>
+    """
+    story.append(Paragraph(rezumat_text, style_normal))
+
+    if request:
+        story.append(Spacer(1, 0.1*inch))
+        story.append(Paragraph('<b>Detalii Produse:</b>', style_heading))
+        
+        links_text = ""
+        for item in items:
+            masina = item.masina
+            produs_link = elimina_diacritice(f"{masina.marca.nume_marca} {masina.model}")
+            url_produs = request.build_absolute_uri(reverse('detalii_masina', kwargs={'id': masina.id}))
+            links_text += f"* {produs_link}: {url_produs}<br/>"
+        
+        story.append(Paragraph(links_text, style_normal))
+
+    story.append(Spacer(1, 0.2*inch))
+    footer_text = f"""
+    <i>Pentru orice intrebari sau probleme, contactati: {admin_email}</i><br/>
+    <i>Factura generata automat pe {data_formatata}</i>
+    """
+    story.append(Paragraph(footer_text, style_normal))
+
+    doc.build(story)
+    
+    return cale_fisier
+
+
+@require_POST
+def checkout(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'success': False, 'error': 'Trebuie să fii autentificat'}, status=401)
+    
+    try:
+        data = json.loads(request.body)
+        cart = data.get('cart', {})
+        
+        if not cart:
+            return JsonResponse({'success': False, 'error': 'Coșul este gol'})
+        
+        comanda = Comanda.objects.create(
+            utilizator=request.user,
+            pret_total=0
+        )
+        
+        total_pret = 0
+
+        for product_id_str, product_data in cart.items():
+            product_id = int(product_id_str)
+            try:
+                masina = Masina.objects.get(pk=product_id)
+                cantitate = int(product_data.get('quantity', 1))
+                pret_unitar = float(product_data.get('price', masina.pret_masina))
+
+                if cantitate > masina.stoc:
+                    return JsonResponse({
+                        'success': False,
+                        'error': f'Stocul insuficient pentru {masina.marca.nume_marca} {masina.model}. Disponibil: {masina.stoc}, Solicitat: {cantitate}'
+                    })
+
+                masina.stoc -= cantitate
+                masina.save()
+
+                item = ItemComanda.objects.create(
+                    comanda=comanda,
+                    masina=masina,
+                    cantitate=cantitate,
+                    pret_unitar=pret_unitar
+                )
+                
+                total_pret += item.subtotal
+            
+            except Masina.DoesNotExist:
+                return JsonResponse({'success': False, 'error': f'Produsul {product_id} nu mai există'})
+
+        comanda.pret_total = total_pret
+        comanda.save()
+
+        cale_factura = genereaza_factura_pdf(comanda, request)
+
+        trimite_email_factura(request.user, comanda, cale_factura)
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'✓ Comandă plasat cu succes! Factură trimisă la {request.user.email}',
+            'order_id': comanda.id
+        })
+    
+    except Exception as e:
+        logger.error(f"Eroare checkout: {str(e)}")
+        return JsonResponse({'success': False, 'error': f'Eroare: {str(e)}'})
+
+
+def trimite_email_factura(utilizator, comanda, cale_factura):
+    try:
+        subiect = f'Factură Comandă #{comanda.id} - Magazin Mașini'
+
+        with open(cale_factura, 'rb') as attachment:
+            content_pdf = attachment.read()
+
+        mesaj_html = f"""
+        <html>
+            <body style="font-family: Arial, sans-serif; color: #333;">
+                <h2 style="color: #4CAF50;">Mulțumim pentru comandă!</h2>
+                <p>Bună {utilizator.first_name or utilizator.username},</p>
+                <p>Comanda ta a fost înregistrată cu succes.</p>
+                
+                <div style="background-color: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                    <p><strong>Detalii Comandă:</strong></p>
+                    <p>Număr Comandă: <strong>#{comanda.id}</strong></p>
+                    <p>Data: <strong>{comanda.data_comanda.strftime('%d.%m.%Y %H:%M')}</strong></p>
+                    <p>Total: <strong>{comanda.pret_total:.2f} EUR</strong></p>
+                </div>
+                
+                <p>Factura detaliată este atașată în acest email.</p>
+                
+                <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+                    <p><small>Dacă ai întrebări, te rog contactează-ne la {settings.DEFAULT_FROM_EMAIL}</small></p>
+                </div>
+            </body>
+        </html>
+        """
+        
+        from django.core.mail import EmailMessage
+        email = EmailMessage(
+            subject=subiect,
+            body=mesaj_html,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[utilizator.email],
+        )
+        email.content_subtype = 'html'
+
+        email.attach(f'factura-{comanda.id}.pdf', content_pdf, 'application/pdf')
+        
+        email.send()
+        
+    except Exception as e:
+        logger.error(f"Eroare trimitere email: {str(e)}")

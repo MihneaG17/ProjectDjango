@@ -1,4 +1,5 @@
 {% extends "aplicatie_masini/baza.html" %}
+{% load static %}
 
 {% block title %}
     {% if categorie_curenta %}
@@ -148,7 +149,13 @@
 
     <div class="lista-produse">
         {% for masina in pagina.object_list %}
-            <div class="masina-card">
+            <div class="masina-card {% if masina.stoc == 0 %}masina-card--indisponibil{% endif %}" data-product-id="{{ masina.id }}" data-product-stock="{{ masina.stoc }}">
+                {% if masina.stoc == 0 %}
+                    <div class="stoc-indisponibil-marker">Indisponibil</div>
+                {% else %}
+                    <div class="in-cos-marker" style="display: none;">✓ În coș</div>
+                {% endif %}
+                
                 <a href="{% url 'detalii_masina' masina.id %}" class="card-img-link">
                     {% if masina.imagine %}
                         <img src="{{ masina.imagine.url }}" alt="{{ masina.marca.nume_marca }} {{ masina.model }}" class="card-img">
@@ -170,7 +177,21 @@
                         </a>
                     </p>
                     <p><strong>Preț:</strong> {{ masina.pret_masina }} EUR</p>
+                    <p><strong>Stoc disponibil:</strong> 
+                        {% if masina.stoc > 0 %}
+                            <span class="stoc-verde">{{ masina.stoc }} unități</span>
+                        {% else %}
+                            <span class="stoc-rosu">0 - Indisponibil</span>
+                        {% endif %}
+                    </p>
                     <p><strong>Kilometraj:</strong> {{ masina.kilometraj }} km</p>
+
+                    {% if masina.stoc > 0 %}
+                        <div class="cart-controls">
+                            <button class="btn btn-add-to-cart" onclick="addToCart({{ masina.id }}, {{ masina.pret_masina }}, '{{ masina.marca.nume_marca }} {{ masina.model }}', {{ masina.stoc }})">Adauga în coș</button>
+                            <button class="btn btn-danger btn-remove" style="display: none;" onclick="removeFromCart({{ masina.id }})">Șterge din coș</button>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         {% endfor %}
@@ -193,4 +214,11 @@
             </span>
         </div>
     {% endif %}
+
+    <script src="{% static 'aplicatie_masini/js/cart.js' %}"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            updateCartUI();
+        });
+    </script>
 {% endblock %}
